@@ -1,0 +1,14 @@
+/homeSys/dist/
+/homeGateway/nbproject/private/
+/homeGateway/build/
+/homeGateway/dist/
+/homeSys/build/
+/homeClient/nbproject/private/
+/homeNode/nbproject/private/
+/homeNode/dist/
+/homeNode/build/
+/restGateway/nbproject/private/
+/restGateway/build/
+/restGateway/dist/
+/homeClient/build/
+/homeClient/dist/
