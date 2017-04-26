@@ -2,17 +2,24 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class PointsGenerator : MonoBehaviour {
     //constant
     int MAX_POINTS = 250;
     float MAX_LENGHT = 100;
-    //params
+    //GameObject Reference
     public GameObject pointPrefab;
-    public float maxAngleD=45;  //expected in degree
-    public float curviness=0.5f;
-    public float segmentLen=50;
-    public int trackLenght=80;   //to be converted in actual points
+    Toggle visibilityToggle;
+    //UI params    
+    Slider curvinessSlider;
+    Slider angleSlider;
+    Slider lenghtSlider;
+    //actual params
+    public float maxAngleD;  //expected in degree, maximum is 45, fixed in the slider
+    public float curviness;     //from 0 to 1
+    public int trackLenght;   //to be converted in actual points
+    public float segmentLen = 50; //not to be decided by the user
     //derivated params, make private then
     public int totalPoints;
     public float maxAngleR;
@@ -21,15 +28,20 @@ public class PointsGenerator : MonoBehaviour {
     public GameObject[] pointsObject;
     //utility
     System.Random random = new System.Random();
-    //controls
-    public Boolean showPoints;
+    Boolean pointsAreVisible;
+    
 
     // Use this for initialization
     void Start() {
-        GenTrack();
+        curvinessSlider = GameObject.Find("curvinessSlider").GetComponent<Slider>();
+        angleSlider = GameObject.Find("angleSlider").GetComponent<Slider>();
+        lenghtSlider = GameObject.Find("lenghtSlider").GetComponent<Slider>();
+        visibilityToggle = GameObject.Find("visibilityToggle").GetComponent<Toggle>();
+        pointsAreVisible = visibilityToggle.isOn;
     }
 
-    void GenTrack() {
+    public void GenTrack() {
+        DestroyPoints();
         maxAngleR = (maxAngleD * Mathf.PI) / 180; //now in radians
         totalPoints = Convert.ToInt32((trackLenght * MAX_POINTS) / MAX_LENGHT);
         points = new Vector3[totalPoints];
@@ -66,17 +78,30 @@ public class PointsGenerator : MonoBehaviour {
             points[i],
             Quaternion.identity) as GameObject;
             pointsObject[i].transform.parent = transform;
-            pointsObject[i].active = false;
+            pointsObject[i].SetActive(pointsAreVisible);
         }
     }
 
-    void PointsVisibility(Boolean visibility) {
+    public void PointsVisibility() {
+        if (pointsAreVisible != visibilityToggle.isOn) {
+            pointsAreVisible = visibilityToggle.isOn;
+            foreach (GameObject pointObject in pointsObject) {
+                pointObject.SetActive(pointsAreVisible);
+            }
+        }
+    }
+
+    void DestroyPoints() {
         foreach(GameObject pointObject in pointsObject) {
-            pointObject.active = visibility;
+            Destroy(pointObject);
         }
     }
     // Update is called once per frame
     void Update() {
-        PointsVisibility(showPoints);
+        curviness = curvinessSlider.value / 100;
+        trackLenght = Convert.ToInt32(lenghtSlider.value);
+        maxAngleD = angleSlider.value;
+        PointsVisibility();
+        
     }
 }
