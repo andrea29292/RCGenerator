@@ -15,8 +15,7 @@ public class UpdateSliderValue : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-        text.text = slider.value.ToString();
-        Debug.Log(slider.value.ToString());
+        text.text = slider.value.ToString();        
         transform.position = transform.parent.transform.position;
 	}
 }
