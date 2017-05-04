@@ -35,9 +35,12 @@ public class PointsGenerator : MonoBehaviour {
     public GameObject[] pointsObject;
     public GameObject[] curveColliders;
     public float[] directions;  //just need it to rotate the collider
-    //utility
+    //miscelaneus
     System.Random random = new System.Random();
     Boolean pointsAreVisible;
+    Vector3 farReturnPoint = new Vector3();
+    Vector3 nearReturnPoint = new Vector3();
+
 
 
     // Use this for initialization
@@ -69,42 +72,71 @@ public class PointsGenerator : MonoBehaviour {
         float direction = (float)(random.NextDouble() * 2 * Math.PI);   //start from a random direction
 
         points[0] = new Vector3(transform.position.x, transform.position.y, transform.position.z);  //but on a center point
-                                                                                                    //considering to make this also random. We'll see!
-
+        
         for (int i = 1; i < totalPoints; i++) {
             float turn = (float)Math.Pow(random.NextDouble(), 1 / curviness);
-            if (random.NextDouble() > .5f) turn = -turn;
+            if (random.NextDouble() > .5f) turn = -turn;        //turn "left" or "right" randomly
             float direction1 = direction + turn * maxAngleR;    //the first choosed direction   
             float direction2 = direction - turn * maxAngleR;    //opposite direction, considering the turn 
             Vector3 point1 = MovePoint(points[i - 1], direction1);
             Vector3 point2 = MovePoint(points[i - 1], direction2);
-
-            if(ComputeOutness(point1) <= ComputeOutness(point2)) {
-                points[i] = point1;
-                direction = direction1;
+            
+            if (i < totalPoints * .70) {
+                //if the point is outside the boundaries, or it will get there, i want to make it turn back
+                //so i will check wheter direction brings the next point nearest the boundaries
+                if (ComputeOutness(point1) <= ComputeOutness(point2)) {
+                    points[i] = point1;
+                    direction = direction1;
+                }
+                else {
+                    points[i] = point2;
+                    direction = direction2;
+                }
+            }
+            else if(i<totalPoints*.90 && i> totalPoints * .70) {  //in the last quarter of the track try to force the track near the first point
+                if (Vector3.Distance(point1, farReturnPoint) < Vector3.Distance(point2, farReturnPoint)) {
+                    points[i] = point1;
+                    direction = direction1;
+                }
+                else {
+                    points[i] = point2;
+                    direction = direction2;
+                }
             }
             else {
-                points[i] = point2;
-                direction = direction2;
+                if (Vector3.Distance(point1, nearReturnPoint) < Vector3.Distance(point2, nearReturnPoint)) {
+                    points[i] = point1;
+                    direction = direction1;
+                }
+                else {
+                    points[i] = point2;
+                    direction = direction2;
+                }
             }
 
             directions[i - 1] = direction * Mathf.Rad2Deg;
+            if (i == 1) {
+                farReturnPoint = MovePoint(points[0], (float)(directions[0] - (Math.PI*.75)), 3);
+                nearReturnPoint = MovePoint(points[0], (float)(directions[0] - (Math.PI)), 2);
+                
+
+            }
 
         }
 
-        int okPoints = Convert.ToInt32(totalPoints * .75);
+        int okPoints = Convert.ToInt32(totalPoints * .90);
         int toFixPoints = totalPoints - okPoints;
         float x0 = points[0].x;
         float z0 = points[0].z;
 
         //in the last quarter of the track force to return to origin
-        for (int i = okPoints; i < totalPoints; i++) {
+        /*for (int i = okPoints; i < totalPoints; i++) {
             float x = points[i].x;
             float z = points[i].z;
             float donePoints = i - okPoints;
             points[i].x = x0 * donePoints / toFixPoints + x * (1 - donePoints / toFixPoints);
             points[i].z = z0 * donePoints / toFixPoints + z * (1 - donePoints / toFixPoints);
-        }
+        }*/
 
 
         FindIntersect();
@@ -119,6 +151,11 @@ public class PointsGenerator : MonoBehaviour {
         return new Vector3(point.x + varX, point.y, point.z + varZ);
     }
 
+    Vector3 MovePoint(Vector3 point, float direction, float distance) {
+        float varX = (float)Math.Sin(direction)*distance;
+        float varZ = (float)Math.Cos(direction)*distance;
+        return new Vector3(point.x + varX, point.y, point.z + varZ);
+    }
     float ComputeOutness(Vector3 point) {
         float outness = 0f;
         if (point.x > maxX) {
@@ -142,6 +179,8 @@ public class PointsGenerator : MonoBehaviour {
         }
         return outness;
     }
+
+
 
     //create GameObject on points position
     void CreateDots() {
@@ -201,6 +240,9 @@ public class PointsGenerator : MonoBehaviour {
         Debug.DrawLine(new Vector3(minX, transform.position.y, minZ), new Vector3(minX, transform.position.y, maxZ), Color.red, 0.1f);
         Debug.DrawLine(new Vector3(minX, transform.position.y, minZ), new Vector3(maxX, transform.position.y, minZ), Color.red, 0.1f);
         Debug.DrawLine(new Vector3(minX, transform.position.y, maxZ), new Vector3(maxX, transform.position.y, maxZ), Color.red, 0.1f);
-
+        Debug.DrawLine(new Vector3(farReturnPoint.x - 1, farReturnPoint.y, farReturnPoint.z), new Vector3(farReturnPoint.x + 1, farReturnPoint.y, farReturnPoint.z), Color.cyan);
+        Debug.DrawLine(new Vector3(farReturnPoint.x, farReturnPoint.y, farReturnPoint.z + 1), new Vector3(farReturnPoint.x, farReturnPoint.y, farReturnPoint.z - 1), Color.cyan);
+        Debug.DrawLine(new Vector3(nearReturnPoint.x - 1, nearReturnPoint.y, nearReturnPoint.z), new Vector3(nearReturnPoint.x + 1, nearReturnPoint.y, nearReturnPoint.z), Color.green);
+        Debug.DrawLine(new Vector3(nearReturnPoint.x, nearReturnPoint.y, nearReturnPoint.z + 1), new Vector3(nearReturnPoint.x, nearReturnPoint.y, nearReturnPoint.z - 1), Color.green);
     }
 }
