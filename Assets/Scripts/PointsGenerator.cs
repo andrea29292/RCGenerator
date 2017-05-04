@@ -41,6 +41,8 @@ public class PointsGenerator : MonoBehaviour {
     Vector3 farReturnPoint = new Vector3();
     Vector3 nearReturnPoint = new Vector3();
 
+    public BezierSpline spline;
+
 
 
     // Use this for initialization
@@ -72,7 +74,7 @@ public class PointsGenerator : MonoBehaviour {
         float direction = (float)(random.NextDouble() * 2 * Math.PI);   //start from a random direction
 
         points[0] = new Vector3(transform.position.x, transform.position.y, transform.position.z);  //but on a center point
-        
+
         for (int i = 1; i < totalPoints; i++) {
             float turn = (float)Math.Pow(random.NextDouble(), 1 / curviness);
             if (random.NextDouble() > .5f) turn = -turn;        //turn "left" or "right" randomly
@@ -80,7 +82,7 @@ public class PointsGenerator : MonoBehaviour {
             float direction2 = direction - turn * maxAngleR;    //opposite direction, considering the turn 
             Vector3 point1 = MovePoint(points[i - 1], direction1);
             Vector3 point2 = MovePoint(points[i - 1], direction2);
-            
+
             if (i < totalPoints * .70) {
                 //if the point is outside the boundaries, or it will get there, i want to make it turn back
                 //so i will check wheter direction brings the next point nearest the boundaries
@@ -93,7 +95,7 @@ public class PointsGenerator : MonoBehaviour {
                     direction = direction2;
                 }
             }
-            else if(i<totalPoints*.90 && i> totalPoints * .70) {  //in the last quarter of the track try to force the track near the first point
+            else if (i < totalPoints * .90 && i > totalPoints * .70) {  //in the last quarter of the track try to force the track near the first point
                 if (Vector3.Distance(point1, farReturnPoint) < Vector3.Distance(point2, farReturnPoint)) {
                     points[i] = point1;
                     direction = direction1;
@@ -116,9 +118,9 @@ public class PointsGenerator : MonoBehaviour {
 
             directions[i - 1] = direction * Mathf.Rad2Deg;
             if (i == 1) {
-                farReturnPoint = MovePoint(points[0], (float)(directions[0] - (Math.PI*.75)), 3);
+                farReturnPoint = MovePoint(points[0], (float)(directions[0] - (Math.PI * .75)), 3);
                 nearReturnPoint = MovePoint(points[0], (float)(directions[0] - (Math.PI)), 2);
-                
+
 
             }
 
@@ -142,7 +144,8 @@ public class PointsGenerator : MonoBehaviour {
         FindIntersect();
         //create GameObject
         CreateDots();
-
+        //Vector3[] passToSpline = {points[0], points[1], points[2], points[3] };
+        spline.AddPoints(points);
     }
 
     Vector3 MovePoint(Vector3 point, float direction) {
