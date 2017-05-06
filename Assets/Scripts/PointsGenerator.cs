@@ -57,8 +57,8 @@ public class PointsGenerator : MonoBehaviour {
     public void GenTrack() {
         DestroyTrack(); //destroy every point and collider GameObject
         maxAngleR = maxAngleD * Mathf.Deg2Rad; //now in radians
-        totalPoints = Convert.ToInt32((trackLenght * MAX_POINTS) / MAX_LENGHT)/4;
-        totalPoints = totalPoints * 4;
+        totalPoints = Convert.ToInt32((trackLenght * MAX_POINTS) / MAX_LENGHT)/3;
+        totalPoints = (totalPoints * 3)+1;
 
         maxX = transform.position.x + totalPoints * fieldDimension;
         minX = transform.position.x - totalPoints * fieldDimension;

@@ -58,8 +58,8 @@ public class BezierSpline : MonoBehaviour {
 	
     public void AddPoints(Vector3[] newPoints)
     {
-        Array.Resize(ref points, newPoints.Length-1);
-        for (int i= 0;i<newPoints.Length-1; i++)
+        Array.Resize(ref points, newPoints.Length);
+        for (int i= 0;i<newPoints.Length; i++)
         {
             points[i] = newPoints[i];
         }
