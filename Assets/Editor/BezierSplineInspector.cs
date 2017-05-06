@@ -4,7 +4,7 @@ using UnityEngine;
 [CustomEditor(typeof(BezierSpline))]
 public class BezierSplineInspector : Editor {
 
-	private const int stepsPerCurve = 10;
+	private const int stepsPerCurve = 100;
 	private const float directionScale = 0.5f;
 	private const float handleSize = 0.04f;
 	private const float pickSize = 0.06f;
@@ -40,11 +40,25 @@ public class BezierSplineInspector : Editor {
 			Handles.DrawLine(p0, p1);
 			Handles.DrawLine(p2, p3);
 			
-			Handles.DrawBezier(p0, p3, p1, p2, Color.white, null, 2f);
+			//Handles.DrawBezier(p0, p3, p1, p2, Color.white, null, 2f);
 			p0 = p3;
 		}
-		ShowDirections();
+        DrawBezier();
+		//ShowDirections();
 	}
+
+    private void DrawBezier()
+    {
+        Handles.color = Color.red;
+        int steps = stepsPerCurve * spline.CurveCount;
+        Vector3 point, nextPoint;
+        for (int i = 0; i < steps; i++)
+        {
+            point = spline.GetPoint(i / (float)steps);
+            nextPoint = spline.GetPoint((i + 1) / (float)steps);
+            Handles.DrawLine(point, nextPoint);
+        }
+    }
 
 	private void ShowDirections () {
 		Handles.color = Color.green;
