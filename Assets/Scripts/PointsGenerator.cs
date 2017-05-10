@@ -1,10 +1,10 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class PointsGenerator : MonoBehaviour {
+    
     //constant
     int MAX_POINTS = 250;
     float MAX_LENGHT = 100;
@@ -34,6 +34,8 @@ public class PointsGenerator : MonoBehaviour {
     public Vector3[] points;
     public GameObject[] pointsObject;
     public GameObject[] curveColliders;
+    public Dictionary<int, GameObject> numberCollider;
+    public Dictionary<GameObject, int> colliderNumber;
     public float[] directions;  //just need it to rotate the collider
     //miscelaneus
     System.Random random = new System.Random();
@@ -55,10 +57,12 @@ public class PointsGenerator : MonoBehaviour {
     }
 
     public void GenTrack() {
+        colliderNumber = new Dictionary<GameObject, int>();
+        numberCollider = new Dictionary<int, GameObject>();
         DestroyTrack(); //destroy every point and collider GameObject
         maxAngleR = maxAngleD * Mathf.Deg2Rad; //now in radians
-        totalPoints = Convert.ToInt32((trackLenght * MAX_POINTS) / MAX_LENGHT)/3;
-        totalPoints = (totalPoints * 3)+1;
+        totalPoints = Convert.ToInt32((trackLenght * MAX_POINTS) / MAX_LENGHT) / 3;
+        totalPoints = (totalPoints * 3) + 1;
 
         maxX = transform.position.x + totalPoints * fieldDimension;
         minX = transform.position.x - totalPoints * fieldDimension;
@@ -142,46 +146,84 @@ public class PointsGenerator : MonoBehaviour {
         }*/
 
 
-        FindIntersect();
+        CrossingFix();
         //create GameObject
         CreateDots();
         //Vector3[] passToSpline = {points[0], points[1], points[2], points[3] };
-        spline.AddPoints(points);
+        //spline.AddPoints(points);
     }
 
-    Vector3 MovePoint(Vector3 point, float direction) {
-        float varX = (float)Math.Sin(direction);
-        float varZ = (float)Math.Cos(direction);
-        return new Vector3(point.x + varX, point.y, point.z + varZ);
-    }
-
-    Vector3 MovePoint(Vector3 point, float direction, float distance) {
-        float varX = (float)Math.Sin(direction)*distance;
-        float varZ = (float)Math.Cos(direction)*distance;
-        return new Vector3(point.x + varX, point.y, point.z + varZ);
-    }
-    float ComputeOutness(Vector3 point) {
-        float outness = 0f;
-        if (point.x > maxX) {
-            Debug.Log("Stai fori!");
-            outness = Math.Abs(point.x - maxX);
+    //this won't only find the intersect but also those condictions where two parts of the track are too much close eachother
+    Boolean CrossingFix() {
+        //this create the colliders
+        for (int i = 0; i < totalPoints; i++) {
+            Vector3 a = points[i];
+            Vector3 b = points[(i + 1) % totalPoints];
+            Vector3 center = new Vector3((a.x + b.x) / 2, 0, (a.z + b.z) / 2);
+            curveColliders[i] =
+            Instantiate(colliderPrefab,
+            center,
+            Quaternion.identity) as GameObject;
+            curveColliders[i].transform.parent = transform.GetChild(1).transform;
+            //let's modify it
+            float distance = Vector3.Distance(a, b);
+            curveColliders[i].GetComponent<BoxCollider>().size = new Vector3(trackWidth, trackWidth, distance);
+            curveColliders[i].transform.Rotate(new Vector3(0, directions[i], 0));
         }
-        if (point.x < minX) {
-            Debug.Log("Stai fori!");
+        //now detect all collision but keep track only of one of the two collider, the one with lowest "id"
+        HashSet<int> collidedSet = new HashSet<int>();
+        for (int i = 0; i < totalPoints; i++)
+            for (int j = 0; j < totalPoints; j++) {
+                if (i == j || Math.Abs(i%(totalPoints-1) - j%(totalPoints-1)) == 1) break;
+                if (curveColliders[i].GetComponent<BoxCollider>().bounds.Intersects(curveColliders[j].GetComponent<BoxCollider>().bounds)) {
+                    collidedSet.Add(Math.Min(i, j));
+                }
+            }
+        if (collidedSet.Count == 0) return false;
+        //else
+        List<int> collided = new List<int>(collidedSet);
+        collided.Sort();
 
-            outness = Math.Abs(point.x - minX);
-        }
-        if (point.z < minZ) {
-            Debug.Log("Stai fori!");
+        Debug.Log(collided.ToString());
+        //i want too group all near collider that has collided so i can lift them up all togheter and also lift some segment confining
+        List<List<int>> collidedGroup = new List<List<int>>();
 
-            outness = Math.Abs(point.z - minZ);
+        for (int i = 0; i < collided.Count; i++) {
+            int size = collidedGroup.Count;
+            if (size == 0) {
+                List<int> toAdd = new List<int>();
+                toAdd.Add(collided[i]);
+                collidedGroup.Add(toAdd);
+            }
+            else {
+                List<int> current = collidedGroup[size - 1];
+                if (collided[i] == current[current.Count - 1] + 1) {//basicly if collided[i] and the last added number are consecutive
+                    current.Add(collided[i]);
+                }
+                else {
+                    List<int> toAdd = new List<int>();
+                    toAdd.Add(collided[i]);
+                    collidedGroup.Add(toAdd);
+                }
+            }
         }
-        if (point.z > maxZ) {
-            Debug.Log("Stai fori!");
 
-            outness = Math.Abs(point.z - maxZ);
+        //it can happen that the last collider and the first has collission, in that case they should form a unique group
+        List<int> firstGroup = collidedGroup[0];
+        List<int> lastGroup = collidedGroup[collidedGroup.Count-1];
+        if((lastGroup[lastGroup.Count-1])==(totalPoints-1) && firstGroup[0] == 0) {
+            lastGroup.AddRange(firstGroup);
+            collidedGroup.Remove(firstGroup);
         }
-        return outness;
+        foreach (List<int> group in collidedGroup) {
+            string print = "GROUP: ";
+            foreach(int coll in group) {
+                print += " " + coll;
+            }
+            Debug.Log(print);
+        }
+            
+        return true;
     }
 
 
@@ -216,23 +258,38 @@ public class PointsGenerator : MonoBehaviour {
         }
     }
 
-    void FindIntersect() {
-        for (int i = 0; i < totalPoints; i++) {
-            Vector3 a = points[i];
-            Vector3 b = points[(i + 1) % totalPoints];
-            Vector3 center = new Vector3((a.x + b.x) / 2, 0, (a.z + b.z) / 2);
-            curveColliders[i] =
-            Instantiate(colliderPrefab,
-            center,
-            Quaternion.identity) as GameObject;
-            curveColliders[i].transform.parent = transform.GetChild(1).transform;
-            //let's modify it
-            float distance = Vector3.Distance(a, b);
-            curveColliders[i].GetComponent<BoxCollider>().size = new Vector3(trackWidth, trackWidth, distance);
-            curveColliders[i].transform.Rotate(new Vector3(0, directions[i], 0));
-            Debug.Log(directions[i]);
 
+
+    Vector3 MovePoint(Vector3 point, float direction) {
+        float varX = (float)Math.Sin(direction);
+        float varZ = (float)Math.Cos(direction);
+        return new Vector3(point.x + varX, point.y, point.z + varZ);
+    }
+
+    Vector3 MovePoint(Vector3 point, float direction, float distance) {
+        float varX = (float)Math.Sin(direction) * distance;
+        float varZ = (float)Math.Cos(direction) * distance;
+        return new Vector3(point.x + varX, point.y, point.z + varZ);
+    }
+
+    float ComputeOutness(Vector3 point) {
+        float outness = 0f;
+        if (point.x > maxX) {
+            outness = Math.Abs(point.x - maxX);
         }
+        if (point.x < minX) {
+
+            outness = Math.Abs(point.x - minX);
+        }
+        if (point.z < minZ) {
+
+            outness = Math.Abs(point.z - minZ);
+        }
+        if (point.z > maxZ) {
+
+            outness = Math.Abs(point.z - maxZ);
+        }
+        return outness;
     }
     // Update is called once per frame
     void Update() {
