@@ -4,7 +4,7 @@ using UnityEngine;
 [CustomEditor(typeof(BezierSpline))]
 public class BezierSplineInspector : Editor {
 
-	private const int stepsPerCurve = 10;
+	private const int stepsPerCurve = 100;
 	private const float directionScale = 0.5f;
 	private const float handleSize = 0.04f;
 	private const float pickSize = 0.06f;
