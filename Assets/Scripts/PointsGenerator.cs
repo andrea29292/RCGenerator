@@ -4,9 +4,9 @@ using UnityEngine;
 using UnityEngine.UI;
 
 public class PointsGenerator : MonoBehaviour {
-    
+
     //constant
-    int MAX_POINTS = 250;
+    int MAX_POINTS = 200;
     float MAX_LENGHT = 100;
     //GameObject Reference
     public GameObject pointPrefab;
@@ -20,9 +20,11 @@ public class PointsGenerator : MonoBehaviour {
     public float maxAngleD;  //expected in degree, maximum is 45, fixed in the slider
     public float curviness;     //from 0 to 1
     public int trackLenght;   //to be converted in actual points
-    public float segmentLen = 50; //not to be decided by the user
-    public float trackWidth = 0.1f;
-    public float fieldDimension = 0.1f;
+    //not to be decided by the user
+    public float segmentLen = 0.1f;
+    public float trackWidth = 0.1f;     //Width of the colliders
+    public float fieldDimension = 0.1f; //how big is the field considering the totalpoints
+    public int farPointDistance = 5;
     //derivated params, make private then
     public int totalPoints;
     public float maxAngleR;
@@ -31,17 +33,18 @@ public class PointsGenerator : MonoBehaviour {
     float maxZ;
     float minZ;
     //structures
-    public Vector3[] points;
+    public List<Vector3> points;
     public GameObject[] pointsObject;
     public GameObject[] curveColliders;
     public Dictionary<int, GameObject> numberCollider;
     public Dictionary<GameObject, int> colliderNumber;
-    public float[] directions;  //just need it to rotate the collider
+    public List<float> directions;  //just need it to rotate the collider
     //miscelaneus
     System.Random random = new System.Random();
     Boolean pointsAreVisible;
     Vector3 farReturnPoint = new Vector3();
     Vector3 nearReturnPoint = new Vector3();
+    float _direction;
 
     public BezierSpline spline;
 
@@ -57,8 +60,9 @@ public class PointsGenerator : MonoBehaviour {
     }
 
     public void GenTrack() {
-        colliderNumber = new Dictionary<GameObject, int>();
-        numberCollider = new Dictionary<int, GameObject>();
+        Debug.Log(Math.Sin(1));
+        Debug.Log(Math.Sin(1 + 2 * Math.PI));
+
         DestroyTrack(); //destroy every point and collider GameObject
         maxAngleR = maxAngleD * Mathf.Deg2Rad; //now in radians
         totalPoints = Convert.ToInt32((trackLenght * MAX_POINTS) / MAX_LENGHT) / 3;
@@ -71,79 +75,48 @@ public class PointsGenerator : MonoBehaviour {
 
 
         //Inizializa Structures
-        points = new Vector3[totalPoints];
-        pointsObject = new GameObject[totalPoints];
-        curveColliders = new GameObject[totalPoints];
-        directions = new float[totalPoints];
+        points = new List<Vector3>();
 
-        float direction = (float)(random.NextDouble() * 2 * Math.PI);   //start from a random direction
+        directions = new List<float>();
 
-        points[0] = new Vector3(transform.position.x, transform.position.y, transform.position.z);  //but on a center point
+        direction = (float)(random.NextDouble() * 360);   //start from a random direction
+
+        points.Add(new Vector3(transform.position.x, transform.position.y, transform.position.z));  //but on a center point
 
         for (int i = 1; i < totalPoints; i++) {
             float turn = (float)Math.Pow(random.NextDouble(), 1 / curviness);
             if (random.NextDouble() > .5f) turn = -turn;        //turn "left" or "right" randomly
-            float direction1 = direction + turn * maxAngleR;    //the first choosed direction   
-            float direction2 = direction - turn * maxAngleR;    //opposite direction, considering the turn 
-            Vector3 point1 = MovePoint(points[i - 1], direction1);
-            Vector3 point2 = MovePoint(points[i - 1], direction2);
-
-            if (i < totalPoints * .70) {
-                //if the point is outside the boundaries, or it will get there, i want to make it turn back
-                //so i will check wheter direction brings the next point nearest the boundaries
-                if (ComputeOutness(point1) <= ComputeOutness(point2)) {
-                    points[i] = point1;
-                    direction = direction1;
-                }
-                else {
-                    points[i] = point2;
-                    direction = direction2;
-                }
-            }
-            else if (i < totalPoints * .90 && i > totalPoints * .70) {  //in the last quarter of the track try to force the track near the first point
-                if (Vector3.Distance(point1, farReturnPoint) < Vector3.Distance(point2, farReturnPoint)) {
-                    points[i] = point1;
-                    direction = direction1;
-                }
-                else {
-                    points[i] = point2;
-                    direction = direction2;
-                }
+            float direction1 = direction + turn * maxAngleD;    //the first choosed direction   
+            float direction2 = direction - turn * maxAngleD;    //opposite direction, considering the turn 
+            Vector3 point1 = MovePoint(points[i - 1], direction1, segmentLen);
+            Vector3 point2 = MovePoint(points[i - 1], direction2, segmentLen);
+            //if the point is outside the boundaries, or it will get there, i want to make it turn back
+            //so i will check wheter direction brings the next point nearest the boundaries
+            if (ComputeOutness(point1) <= ComputeOutness(point2)) {
+                points.Add(point1);
+                direction = direction1;
             }
             else {
-                if (Vector3.Distance(point1, nearReturnPoint) < Vector3.Distance(point2, nearReturnPoint)) {
-                    points[i] = point1;
-                    direction = direction1;
-                }
-                else {
-                    points[i] = point2;
-                    direction = direction2;
-                }
+                points.Add(point2);
+                direction = direction2;
             }
-
-            directions[i - 1] = direction * Mathf.Rad2Deg;
+            directions.Add(direction);
             if (i == 1) {
-                farReturnPoint = MovePoint(points[0], (float)(directions[0] - (Math.PI * .75)), 3);
-                nearReturnPoint = MovePoint(points[0], (float)(directions[0] - (Math.PI)), 2);
-
-
+                int howFar = 3 + farPointDistance * (1 - (int)maxAngleD / 90);
+                farReturnPoint = MovePoint(points[0], (float)(directions[0] - 180), howFar);
+                //nearReturnPoint = MovePoint(points[0], (float)(directions[0] - (Math.PI)), 2);
             }
-
         }
 
-        int okPoints = Convert.ToInt32(totalPoints * .90);
-        int toFixPoints = totalPoints - okPoints;
-        float x0 = points[0].x;
-        float z0 = points[0].z;
+        ReachPoint(farReturnPoint);
+        ReachPoint(points[0]);
+        totalPoints = points.Count;
+        pointsObject = new GameObject[totalPoints];
+        curveColliders = new GameObject[totalPoints - 1];
+        /*while (Vector3.Distance(points[points.Count - 1], points[0]) > segmentLen) {
 
-        //in the last quarter of the track force to return to origin
-        /*for (int i = okPoints; i < totalPoints; i++) {
-            float x = points[i].x;
-            float z = points[i].z;
-            float donePoints = i - okPoints;
-            points[i].x = x0 * donePoints / toFixPoints + x * (1 - donePoints / toFixPoints);
-            points[i].z = z0 * donePoints / toFixPoints + z * (1 - donePoints / toFixPoints);
         }*/
+
 
 
         CrossingFix();
@@ -153,10 +126,35 @@ public class PointsGenerator : MonoBehaviour {
         //spline.AddPoints(points);
     }
 
+    void ReachPoint(Vector3 g) {    //get it?
+        while (Vector3.Distance(points[points.Count - 1], g) > segmentLen) {
+
+            int last = points.Count - 1;
+            float curve = AngleBetweenVector2(new Vector2(points[last].x, points[last].z), new Vector2(g.x, g.z), new Vector2(points[last - 1].x, points[last - 1].z));
+            //Vector3 myDirection = (farReturnPoint - points[last]).normalized;
+            if (Math.Abs(curve) > maxAngleD) {
+                curve = maxAngleD;
+            }
+            float direction1 = direction + curve;    //the first choosed direction   
+            float direction2 = direction - curve;    //opposite direction, considering the turn 
+            Vector3 point1 = MovePoint(points[last], direction1, segmentLen);
+            Vector3 point2 = MovePoint(points[last], direction2, segmentLen);
+            if (Vector3.Distance(point1, g) < Vector3.Distance(point2, g)) {
+                direction = direction1;
+                points.Add(point1);
+            }
+            else {
+                direction = direction2;
+                points.Add(point2);
+            }
+            directions.Add(direction);
+        }
+    }
+
     //this won't only find the intersect but also those condictions where two parts of the track are too much close eachother
     Boolean CrossingFix() {
         //this create the colliders
-        for (int i = 0; i < totalPoints; i++) {
+        for (int i = 0; i < totalPoints - 1; i++) {
             Vector3 a = points[i];
             Vector3 b = points[(i + 1) % totalPoints];
             Vector3 center = new Vector3((a.x + b.x) / 2, 0, (a.z + b.z) / 2);
@@ -172,9 +170,9 @@ public class PointsGenerator : MonoBehaviour {
         }
         //now detect all collision but keep track only of one of the two collider, the one with lowest "id"
         HashSet<int> collidedSet = new HashSet<int>();
-        for (int i = 0; i < totalPoints; i++)
-            for (int j = 0; j < totalPoints; j++) {
-                if (i == j || Math.Abs(i%(totalPoints-1) - j%(totalPoints-1)) == 1) break;
+        for (int i = 0; i < curveColliders.Length; i++)
+            for (int j = 0; j < curveColliders.Length; j++) {
+                if (i == j || Math.Abs(i % (totalPoints - 1) - j % (totalPoints - 1)) == 1) break;
                 if (curveColliders[i].GetComponent<BoxCollider>().bounds.Intersects(curveColliders[j].GetComponent<BoxCollider>().bounds)) {
                     collidedSet.Add(Math.Min(i, j));
                 }
@@ -184,7 +182,6 @@ public class PointsGenerator : MonoBehaviour {
         List<int> collided = new List<int>(collidedSet);
         collided.Sort();
 
-        Debug.Log(collided.ToString());
         //i want too group all near collider that has collided so i can lift them up all togheter and also lift some segment confining
         List<List<int>> collidedGroup = new List<List<int>>();
 
@@ -210,19 +207,19 @@ public class PointsGenerator : MonoBehaviour {
 
         //it can happen that the last collider and the first has collission, in that case they should form a unique group
         List<int> firstGroup = collidedGroup[0];
-        List<int> lastGroup = collidedGroup[collidedGroup.Count-1];
-        if((lastGroup[lastGroup.Count-1])==(totalPoints-1) && firstGroup[0] == 0) {
+        List<int> lastGroup = collidedGroup[collidedGroup.Count - 1];
+        if ((lastGroup[lastGroup.Count - 1]) == (totalPoints - 1) && firstGroup[0] == 0) {
             lastGroup.AddRange(firstGroup);
             collidedGroup.Remove(firstGroup);
         }
         foreach (List<int> group in collidedGroup) {
             string print = "GROUP: ";
-            foreach(int coll in group) {
+            foreach (int coll in group) {
                 print += " " + coll;
             }
             Debug.Log(print);
         }
-            
+
         return true;
     }
 
@@ -258,17 +255,23 @@ public class PointsGenerator : MonoBehaviour {
         }
     }
 
-
+    float AngleBetweenVector2(Vector2 vec1, Vector2 vec2, Vector2 center) {
+        vec2 = (vec2 - center).normalized;
+        vec1 = (vec1 - center).normalized;
+        //Vector2 v = (vec2 - vec1).normalized;
+        //float sign = (vec2.y < vec1.y) ? -1.0f : 1.0f;
+        return Vector2.Angle(vec2, vec1);
+    }
 
     Vector3 MovePoint(Vector3 point, float direction) {
-        float varX = (float)Math.Sin(direction);
-        float varZ = (float)Math.Cos(direction);
+        float varX = (float)Math.Sin(direction * Mathf.Deg2Rad);
+        float varZ = (float)Math.Cos(direction * Mathf.Deg2Rad);
         return new Vector3(point.x + varX, point.y, point.z + varZ);
     }
 
     Vector3 MovePoint(Vector3 point, float direction, float distance) {
-        float varX = (float)Math.Sin(direction) * distance;
-        float varZ = (float)Math.Cos(direction) * distance;
+        float varX = (float)Math.Sin(direction * Mathf.Deg2Rad) * distance;
+        float varZ = (float)Math.Cos(direction * Mathf.Deg2Rad) * distance;
         return new Vector3(point.x + varX, point.y, point.z + varZ);
     }
 
@@ -290,6 +293,18 @@ public class PointsGenerator : MonoBehaviour {
             outness = Math.Abs(point.z - maxZ);
         }
         return outness;
+    }
+
+    public float direction
+    {
+        get
+        {
+            return _direction;
+        }
+        set
+        {
+            _direction = value % 360;
+        }
     }
     // Update is called once per frame
     void Update() {
