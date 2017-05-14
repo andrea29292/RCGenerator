@@ -21,10 +21,10 @@ public class PointsGenerator : MonoBehaviour {
     public float curviness;     //from 0 to 1
     public int trackLenght;   //to be converted in actual points
     //not to be decided by the user
-    public float segmentLen = 0.1f;
+    public float segmentLen = 0.2f;
     public float trackWidth = 0.1f;     //Width of the colliders
     public float fieldDimension = 0.1f; //how big is the field considering the totalpoints
-    public int farPointDistance = 5;
+    public float farPointDistance;
     //derivated params, make private then
     public int totalPoints;
     public float maxAngleR;
@@ -52,16 +52,18 @@ public class PointsGenerator : MonoBehaviour {
 
     // Use this for initialization
     void Start() {
+        farPointDistance = 10 * segmentLen;
         curvinessSlider = GameObject.Find("curvinessSlider").GetComponent<Slider>();
         angleSlider = GameObject.Find("angleSlider").GetComponent<Slider>();
         lenghtSlider = GameObject.Find("lenghtSlider").GetComponent<Slider>();
         visibilityToggle = GameObject.Find("visibilityToggle").GetComponent<Toggle>();
         pointsAreVisible = visibilityToggle.isOn;
     }
-
-    public void GenTrack() {
-        Debug.Log(Math.Sin(1));
-        Debug.Log(Math.Sin(1 + 2 * Math.PI));
+    void GenTrack() {
+        //while (!GenTrackDone()) ;
+        GenTrackDone();
+    }
+    Boolean GenTrackDone() {
 
         DestroyTrack(); //destroy every point and collider GameObject
         maxAngleR = maxAngleD * Mathf.Deg2Rad; //now in radians
@@ -88,11 +90,11 @@ public class PointsGenerator : MonoBehaviour {
             if (random.NextDouble() > .5f) turn = -turn;        //turn "left" or "right" randomly
             float direction1 = direction + turn * maxAngleD;    //the first choosed direction   
             float direction2 = direction - turn * maxAngleD;    //opposite direction, considering the turn 
-            Vector3 point1 = MovePoint(points[i - 1], direction1, segmentLen);
-            Vector3 point2 = MovePoint(points[i - 1], direction2, segmentLen);
+            Vector3 point1 = Support.MovePoint(points[i - 1], direction1, segmentLen);
+            Vector3 point2 = Support.MovePoint(points[i - 1], direction2, segmentLen);
             //if the point is outside the boundaries, or it will get there, i want to make it turn back
             //so i will check wheter direction brings the next point nearest the boundaries
-            if (ComputeOutness(point1) <= ComputeOutness(point2)) {
+            if (Support.ComputeOutness(point1, maxX, minX, maxZ, minZ) <= Support.ComputeOutness(point2, maxX, minX, maxZ, minZ)) {
                 points.Add(point1);
                 direction = direction1;
             }
@@ -102,20 +104,30 @@ public class PointsGenerator : MonoBehaviour {
             }
             directions.Add(direction);
             if (i == 1) {
-                int howFar = 3 + farPointDistance * (1 - (int)maxAngleD / 90);
-                farReturnPoint = MovePoint(points[0], (float)(directions[0] - 180), howFar);
+                float howFar = 3 + farPointDistance * (1 - maxAngleD / 45);
+                farReturnPoint = Support.MovePoint(points[0], (float)(directions[0] - 180), howFar);
                 //nearReturnPoint = MovePoint(points[0], (float)(directions[0] - (Math.PI)), 2);
             }
         }
 
-        ReachPoint(farReturnPoint);
-        ReachPoint(points[0]);
+        int k = 0;
+        while (Vector3.Distance(points[points.Count - 1], farReturnPoint) > segmentLen) {
+            ReachPoint(farReturnPoint);
+            k++;
+            if (k >= totalPoints / 2) return false;
+        }
+        k = 0;
+        while (Vector3.Distance(points[points.Count - 1], points[0]) > segmentLen) {
+            ReachPoint(points[0]);
+            k++;
+            if (k >= totalPoints / 2) return false;
+        }
         totalPoints = points.Count;
+        //check if we can make arrange the number of points
+        //if (RemoveSomePoints() == false) return false;
+
         pointsObject = new GameObject[totalPoints];
         curveColliders = new GameObject[totalPoints - 1];
-        /*while (Vector3.Distance(points[points.Count - 1], points[0]) > segmentLen) {
-
-        }*/
 
 
 
@@ -124,33 +136,60 @@ public class PointsGenerator : MonoBehaviour {
         CreateDots();
         //Vector3[] passToSpline = {points[0], points[1], points[2], points[3] };
         //spline.AddPoints(points);
+
+        return true;
     }
 
     void ReachPoint(Vector3 g) {    //get it?
-        while (Vector3.Distance(points[points.Count - 1], g) > segmentLen) {
 
-            int last = points.Count - 1;
-            float curve = AngleBetweenVector2(new Vector2(points[last].x, points[last].z), new Vector2(g.x, g.z), new Vector2(points[last - 1].x, points[last - 1].z));
-            //Vector3 myDirection = (farReturnPoint - points[last]).normalized;
-            if (Math.Abs(curve) > maxAngleD) {
-                curve = maxAngleD;
-            }
-            float direction1 = direction + curve;    //the first choosed direction   
-            float direction2 = direction - curve;    //opposite direction, considering the turn 
-            Vector3 point1 = MovePoint(points[last], direction1, segmentLen);
-            Vector3 point2 = MovePoint(points[last], direction2, segmentLen);
-            if (Vector3.Distance(point1, g) < Vector3.Distance(point2, g)) {
-                direction = direction1;
-                points.Add(point1);
-            }
-            else {
-                direction = direction2;
-                points.Add(point2);
-            }
-            directions.Add(direction);
+        int last = points.Count - 1;
+        float curve = Support.AngleBetweenVector2(new Vector2(points[last].x, points[last].z), new Vector2(g.x, g.z), new Vector2(points[last - 1].x, points[last - 1].z));
+        //Vector3 myDirection = (farReturnPoint - points[last]).normalized;
+        if (Math.Abs(curve) > maxAngleD) {
+            curve = maxAngleD;
         }
+        float direction1 = direction + curve;    //the first choosed direction   
+        float direction2 = direction - curve;    //opposite direction, considering the turn 
+        Vector3 point1 = Support.MovePoint(points[last], direction1, segmentLen);
+        Vector3 point2 = Support.MovePoint(points[last], direction2, segmentLen);
+        if (Vector3.Distance(point1, g) < Vector3.Distance(point2, g)) {
+            direction = direction1;
+            points.Add(point1);
+        }
+        else {
+            direction = direction2;
+            points.Add(point2);
+        }
+        directions.Add(direction);
+
     }
 
+    //since for draw the spline we need 3x+1 number of points, i have to delete some points to make this happen
+    Boolean RemoveSomePoints() {
+        int toDelete;
+        int remainder = totalPoints % 3;
+        if (remainder == 0) toDelete = 2;
+        else if (remainder == 2) toDelete = 1;
+        else toDelete = 0;
+        for(int i = 0; i < toDelete; i++) {
+            if (!RemovablePoint()) return false;
+        }
+        return true;
+
+    }
+
+    Boolean RemovablePoint() {
+        for(int i=0; i < directions.Count-2; i++) {
+            if (Math.Abs(directions[i] - directions[i + 2]) <= maxAngleD) {
+                points.RemoveAt(i + 1);
+                directions.RemoveAt(i + 1);
+                //directions[i]=
+
+                return true;
+            }
+        }
+        return false;
+    }
     //this won't only find the intersect but also those condictions where two parts of the track are too much close eachother
     Boolean CrossingFix() {
         //this create the colliders
@@ -255,45 +294,7 @@ public class PointsGenerator : MonoBehaviour {
         }
     }
 
-    float AngleBetweenVector2(Vector2 vec1, Vector2 vec2, Vector2 center) {
-        vec2 = (vec2 - center).normalized;
-        vec1 = (vec1 - center).normalized;
-        //Vector2 v = (vec2 - vec1).normalized;
-        //float sign = (vec2.y < vec1.y) ? -1.0f : 1.0f;
-        return Vector2.Angle(vec2, vec1);
-    }
 
-    Vector3 MovePoint(Vector3 point, float direction) {
-        float varX = (float)Math.Sin(direction * Mathf.Deg2Rad);
-        float varZ = (float)Math.Cos(direction * Mathf.Deg2Rad);
-        return new Vector3(point.x + varX, point.y, point.z + varZ);
-    }
-
-    Vector3 MovePoint(Vector3 point, float direction, float distance) {
-        float varX = (float)Math.Sin(direction * Mathf.Deg2Rad) * distance;
-        float varZ = (float)Math.Cos(direction * Mathf.Deg2Rad) * distance;
-        return new Vector3(point.x + varX, point.y, point.z + varZ);
-    }
-
-    float ComputeOutness(Vector3 point) {
-        float outness = 0f;
-        if (point.x > maxX) {
-            outness = Math.Abs(point.x - maxX);
-        }
-        if (point.x < minX) {
-
-            outness = Math.Abs(point.x - minX);
-        }
-        if (point.z < minZ) {
-
-            outness = Math.Abs(point.z - minZ);
-        }
-        if (point.z > maxZ) {
-
-            outness = Math.Abs(point.z - maxZ);
-        }
-        return outness;
-    }
 
     public float direction
     {
