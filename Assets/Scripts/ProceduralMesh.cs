@@ -26,7 +26,7 @@ public class ProceduralMesh : MonoBehaviour {
         List<Vector3> vertList = new List<Vector3>();
         List<int> triList = new List<int>();
         List<Vector2> uvList = new List<Vector2>();
-        Vector3 upNormal = new Vector3(0, 0, -1);
+        Vector3 upNormal = new Vector3(0, 0, 1);
 
         triList.AddRange(new int[] {
             2, 1, 0,    //start face
@@ -43,9 +43,11 @@ public class ProceduralMesh : MonoBehaviour {
 
             Vector3 segmentDirection = spline.GetVelocity(t) - spline.GetVelocity(futureT);
             segmentDirection.Normalize();
-            Vector3 segmentRight = Vector3.Cross(upNormal,segmentDirection);
+
+            Vector3 segmentRight = Vector3.ProjectOnPlane(segmentDirection, upNormal);
             segmentRight *= width;
-            Vector3 offset = segmentRight * (width / 2) * scaling;
+            //Vector3 offset = segmentRight * (width / 2) * scaling;
+            Vector3 offset = Vector3.zero;
             Vector3 br = segmentRight + upNormal * width + offset;
             Vector3 tr = segmentRight + upNormal * -width + offset;
             Vector3 bl = -segmentRight + upNormal * width + offset;

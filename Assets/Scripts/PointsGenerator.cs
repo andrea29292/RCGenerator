@@ -42,7 +42,7 @@ public class PointsGenerator : MonoBehaviour {
     Vector3 nearReturnPoint = new Vector3();
 
     public BezierSpline spline;
-    public ProceduralMesh mesh;
+    public ProceduralMesh2 mesh;
 
 
 
@@ -148,7 +148,7 @@ public class PointsGenerator : MonoBehaviour {
         CreateDots();
         //Vector3[] passToSpline = {points[0], points[1], points[2], points[3] };
         spline.AddPoints(points);
-        mesh.gameObject.GetComponent<MeshFilter>().mesh = mesh.CreateMesh();
+        mesh.CreateMesh();
     }
 
     Vector3 MovePoint(Vector3 point, float direction) {
