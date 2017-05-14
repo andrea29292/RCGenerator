@@ -1,5 +1,7 @@
 ﻿using UnityEngine;
 using System;
+using System.Collections;
+using System.Collections.Generic;
 
 public class BezierSpline : MonoBehaviour {
 
@@ -184,10 +186,10 @@ public class BezierSpline : MonoBehaviour {
 		}
 	}
 
-    public void AddPoints(Vector3[] newPoints)
+    public void AddPoints(List<Vector3> newPoints)
     {
-        Array.Resize(ref points, newPoints.Length);
-        for (int i = 0; i < newPoints.Length; i++)
+        Array.Resize(ref points, newPoints.Count);
+        for (int i = 0; i < newPoints.Count; i++)
         {
             points[i] = newPoints[i];
         }

@@ -5,6 +5,7 @@ using UnityEngine;
 public class ProceduralMesh2 : MonoBehaviour {
     public BezierSpline spline;
     public int size = 10;
+    public int width = 1;
     // Use this for initialization
     void Start () {
         
@@ -22,8 +23,8 @@ public class ProceduralMesh2 : MonoBehaviour {
 
             Vector3 Start = spline.GetPoint(0f);
             Quaternion rotation = Quaternion.LookRotation(spline.GetVelocity(0));
-            Vector3 left = rotation * Vector3.left;
-            Vector3 right = rotation * Vector3.right;
+            Vector3 left = rotation * Vector3.left*width;
+            Vector3 right = rotation * Vector3.right*width;
             Vector3 up = rotation * Vector3.up;
             vertices.Add(Start + right);
             vertices.Add(Start + left);
@@ -38,8 +39,8 @@ public class ProceduralMesh2 : MonoBehaviour {
                 Vector3 End = spline.GetPoint(t);
             rotation = Quaternion.LookRotation(spline.GetVelocity(t));
 
-            left = rotation * Vector3.left;
-                right = rotation * Vector3.right;
+                left = rotation * Vector3.left * width;
+                right = rotation * Vector3.right * width;
                 up = rotation * Vector3.up;
 
                 vertices.Add(End + right);
@@ -64,6 +65,7 @@ public class ProceduralMesh2 : MonoBehaviour {
             mesh.SetNormals(normals);
             mesh.SetTriangles(triangles, 0);
             GetComponent<MeshFilter>().mesh = mesh;
+            GetComponent<MeshCollider>().sharedMesh = mesh;
         }
     }
 
