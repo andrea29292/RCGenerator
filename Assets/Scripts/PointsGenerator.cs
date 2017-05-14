@@ -125,7 +125,7 @@ public class PointsGenerator : MonoBehaviour {
         }
         totalPoints = points.Count;
         //check if we can make arrange the number of points
-        //if (RemoveSomePoints() == false) return false;
+        if (RemoveSomePoints() == false) return false;
 
         pointsObject = new GameObject[totalPoints];
         curveColliders = new GameObject[totalPoints - 1];
@@ -137,8 +137,8 @@ public class PointsGenerator : MonoBehaviour {
         CreateDots();
         //Vector3[] passToSpline = {points[0], points[1], points[2], points[3] };
 
-        spline.AddPoints(points);
-        mesh.CreateMesh();
+        //spline.AddPoints(points);
+        ////mesh.CreateMesh();
 
         //spline.AddPoints(points);
 
@@ -180,16 +180,31 @@ public class PointsGenerator : MonoBehaviour {
         for(int i = 0; i < toDelete; i++) {
             if (!RemovablePoint()) return false;
         }
+        if (points.Count == totalPoints - toDelete) Debug.Log("TUTTO OK");
+        else Debug.Log("PUNTI NON CORRETTI");
+        totalPoints = points.Count;
         return true;
 
     }
 
     Boolean RemovablePoint() {
-        for(int i=0; i < directions.Count-2; i++) {
+        for(int i=1; i < directions.Count-2; i++) {
             if (Math.Abs(directions[i] - directions[i + 2]) <= maxAngleD) {
-                points.RemoveAt(i + 1);
+                //now update directions
+                float angle = Support.AngleBetweenVector2(new Vector2(points[i + 1].x, points[i + 1].z),
+                                                            new Vector2(points[i + 2].x, points[i + 2].z),
+                                                            new Vector2(points[i].x, points[i].z));
+                float direction1 = directions[i - 1] + angle;
+                float direction2 = directions[i - 1] - angle;
+
+                Vector3 point1 = Support.MovePoint(points[i], direction1, segmentLen);
+                Vector3 point2 = Support.MovePoint(points[i], direction2, segmentLen);
+
+                if (point1.x == points[i + 2].x && point1.z == points[i + 2].z) directions[i] = direction1;
+                else directions[i] = direction2;
                 directions.RemoveAt(i + 1);
-                //directions[i]=
+                points.RemoveAt(i + 1);
+
 
                 return true;
             }
