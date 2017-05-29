@@ -143,12 +143,14 @@ public class PointsGenerator : MonoBehaviour {
 
 
         //check eventually crossing of the track
-        CrossingFix();
+        //CrossingFix();
         //create GameObjects
         CreateDots();
 
-
+        spline.curves = new Dictionary<int, List<Vector3>>();
         spline.AddPoints(points);
+        
+        spline.GenerateCollisions();
         mesh.CreateMesh();
 
 

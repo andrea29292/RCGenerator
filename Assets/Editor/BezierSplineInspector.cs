@@ -19,11 +19,12 @@ public class BezierSplineInspector : Editor {
 	private Transform handleTransform;
 	private Quaternion handleRotation;
 	private int selectedIndex = -1;
-
+    /*
 	public override void OnInspectorGUI () {
 		spline = target as BezierSpline;
 		EditorGUI.BeginChangeCheck();
 		bool loop = EditorGUILayout.Toggle("Loop", spline.Loop);
+        
 		if (EditorGUI.EndChangeCheck()) {
 			Undo.RecordObject(spline, "Toggle Loop");
 			EditorUtility.SetDirty(spline);
@@ -37,7 +38,7 @@ public class BezierSplineInspector : Editor {
 			spline.AddCurve();
 			EditorUtility.SetDirty(spline);
 		}
-	}
+	}*/
 
 	private void DrawSelectedPointInspector() {
 		GUILayout.Label("Selected Point");

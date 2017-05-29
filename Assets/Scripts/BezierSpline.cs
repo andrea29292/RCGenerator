@@ -5,8 +5,13 @@ using System.Collections.Generic;
 
 public class BezierSpline : MonoBehaviour {
 
-	[SerializeField]
-	private Vector3[] points;
+
+    public Dictionary<int, List<Vector3>> curves = new Dictionary<int, List<Vector3>>();
+    public GameObject[] curveColliders; //to detect intersections on the track
+    public int stepsPerCurve = 5;
+    public GameObject colliderPrefab;
+    [SerializeField]
+	public Vector3[] points;
 
 	[SerializeField]
 	private BezierControlPointMode[] modes;
@@ -164,8 +169,25 @@ public class BezierSpline : MonoBehaviour {
 	public Vector3 GetDirection (float t) {
 		return GetVelocity(t).normalized;
 	}
+    public void AddCurve(Vector3 p0, Vector3 p1, Vector3 p2) {
+        Array.Resize(ref points, points.Length + 3);
+        points[points.Length - 3] = p0;
+        points[points.Length - 2] = p1;
+        points[points.Length - 1] = p2;
 
-	public void AddCurve () {
+        Array.Resize(ref modes, modes.Length + 1);
+        modes[modes.Length - 1] = modes[modes.Length - 2];
+        EnforceMode(points.Length - 4);
+
+        if (loop)
+        {
+            points[points.Length - 1] = points[0];
+            modes[modes.Length - 1] = modes[0];
+            EnforceMode(0);
+        }
+    }
+
+    public void AddCurve () {
 		Vector3 point = points[points.Length - 1];
 		Array.Resize(ref points, points.Length + 3);
 		point.x += 1f;
@@ -188,12 +210,38 @@ public class BezierSpline : MonoBehaviour {
 
     public void AddPoints(List<Vector3> newPoints)
     {
-        Array.Resize(ref points, newPoints.Count);
-        for (int i = 0; i < newPoints.Count; i++)
+        int curveNum = 0;
+        Array.Resize(ref points, 4);
+        points[0] = newPoints[0];
+        points[1] = newPoints[1];
+        points[2] = newPoints[2];
+        points[3] = newPoints[3];
+        curves.Add(curveNum, new List<Vector3> { points[0], points[1], points[2], points[3] });
+        for (int i = 4; i < newPoints.Count; i+=3)
         {
-            points[i] = newPoints[i];
+            curveNum += 1;
+            AddCurve(newPoints[i], newPoints[i + 1], newPoints[i + 2]);
+            curves.Add(curveNum, new List<Vector3> { points[i-1], points[i], points[i+1], points[i+2] });
+            //points[i] = newPoints[i];
         }
         Debug.Log("Punti: " + points.Length);
+    }
+
+    public void GenerateCollisions()
+    {
+        int steps = stepsPerCurve * CurveCount;
+        Vector3 point, nextPoint, direction;
+        curveColliders = new GameObject[steps];
+        for (int i = 0; i < steps; i++)
+        {
+            point = GetPoint(i / (float)steps);
+            direction = GetVelocity(i / (float)steps);
+            nextPoint = GetPoint((i + 1) / (float)steps);
+            curveColliders[i] = Instantiate(colliderPrefab,point,Quaternion.LookRotation(direction)) as GameObject;
+            curveColliders[i].GetComponent<BoxCollider>().size = new Vector3(2,2,Vector3.Distance(point, nextPoint));
+            /*curveColliders[i].GetComponent<BoxCollider>().bounds.Intersects(curveColliders[j].GetComponent<BoxCollider>().bounds)*/
+        }
+    
     }
 
 
