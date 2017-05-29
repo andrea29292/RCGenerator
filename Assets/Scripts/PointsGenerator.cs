@@ -35,7 +35,6 @@ public class PointsGenerator : MonoBehaviour {
     float minZ;
     //structures
     public List<List<Vector3>> curvePoints;
-    public List<Vector3> points;
     public List<GameObject> pointsObject;   //collections of game objects corrisponding to points
     public GameObject[] curveColliders; //to detect intersections on the track
     public List<float> directions;  //just need it to rotate the collider
@@ -101,7 +100,6 @@ public class PointsGenerator : MonoBehaviour {
 
         //Initialize Structures
         curvePoints = new List<List<Vector3>>();
-        points = new List<Vector3>();
         directions = new List<float>();
 
         direction = (float)(random.NextDouble() * 360);   //start from a random direction
@@ -182,7 +180,6 @@ public class PointsGenerator : MonoBehaviour {
         CreateDots();
 
         spline.curves = new Dictionary<int, List<Vector3>>();
-        spline.AddPoints(points);
         
         spline.GenerateCollisions();
         mesh.CreateMesh();
@@ -201,14 +198,14 @@ public class PointsGenerator : MonoBehaviour {
     }
 
     Boolean correctSpline(List<Vector3> newCurve) {
-        if (buildSpline(points)) return true;
+        if (buildSpline(newCurve)) return true;
         level = 1;
         List<Vector3> prevCurve = curvePoints[curvePoints.Count - 1];
         raiseLowerCurve(newCurve, prevCurve, level);
-        if (buildSpline(newCurve)) return true;
+        if (buildSpline(newCurve), prevCurve) return true;
         level = -1;
         raiseLowerCurve(newCurve, prevCurve, level);
-        if (buildSpline(newCurve)) return true;
+        if (buildSpline(newCurve), prevCurve) return true;
         return false;
 
     }
@@ -262,7 +259,10 @@ public class PointsGenerator : MonoBehaviour {
     Boolean buildSpline(List<Vector3> points) {
         if (random.NextDouble() < 0.01f) return false;
         return true;
-
+    }
+    Boolean buildSpline(List<Vector3> points, List<Vector3> prevPoints) {
+        if (random.NextDouble() < 0.01f) return false;
+        return true;
     }
     //generate a new point toward the given point
     Vector3 ReachPoint(Vector3 anchor, Vector3 target, Vector3 center) {
