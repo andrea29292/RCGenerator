@@ -2,7 +2,7 @@
 using System.Collections;
 using System;
 
-public class Support  {
+public class Support {
 
     //given two points and one direction, it gives the direction needed to go from vec1 to vec2
     public static float WhichCurve(Vector3 vec1, Vector3 vec2, float prevDirection, float segmentLenght) {
@@ -11,9 +11,16 @@ public class Support  {
         Vector3 followPoint3 = MovePoint(vec1, prevDirection, segmentLenght);
         Vector2 followPoint = new Vector2(followPoint3.x, followPoint3.z);
         float angle = AngleBetweenVector2(followPoint, v2, v1);
-        if (Vector3.Distance(MovePoint(v1, (prevDirection + angle)%360, segmentLenght), v2) <= Vector3.Distance(MovePoint(v1, (prevDirection - angle)%360, segmentLenght),v2))
-            return (prevDirection + angle)%360;
-        else return (prevDirection - angle)%360;
+        Vector3 point1 = MovePoint(v1, (prevDirection + angle) % 360, segmentLenght);
+        Vector3 point2 = MovePoint(v1, (prevDirection - angle) % 360, segmentLenght);
+        Debug.DrawLine(new Vector3(point1.x + 1, point1.y, point1.z), new Vector3(point1.x - 1, point1.y, point1.z),Color.green, 10);
+        Debug.DrawLine(new Vector3(point1.x, point1.y, point1.z+1), new Vector3(point1.x, point1.y, point1.z-1), Color.green, 10);
+        Debug.DrawLine(new Vector3(point2.x + 1, point2.y, point2.z), new Vector3(point2.x - 1, point2.y, point2.z), Color.green, 10);
+        Debug.DrawLine(new Vector3(point2.x, point2.y, point2.z + 1), new Vector3(point2.x, point2.y, point2.z - 1),Color.green,10);
+
+        if (Vector3.Distance( point1,v2) <= Vector3.Distance(point2, v2))
+            return (prevDirection + angle) % 360;
+        else return (prevDirection - angle) % 360;
 
     }
 
