@@ -7,11 +7,14 @@ public class BezierSpline : MonoBehaviour {
 
 
     public Dictionary<int, List<Vector3>> curves = new Dictionary<int, List<Vector3>>();
-    public GameObject[] curveColliders; //to detect intersections on the track
+    public List<GameObject> curveColliders; //to detect intersections on the track
     public int stepsPerCurve = 5;
     public GameObject colliderPrefab;
+    public GameObject spherePrefab;
     [SerializeField]
 	public Vector3[] points;
+    public bool firstTime = true;
+    
 
 	[SerializeField]
 	private BezierControlPointMode[] modes;
@@ -74,7 +77,8 @@ public class BezierSpline : MonoBehaviour {
 		EnforceMode(index%4);
 	}
 
-	public BezierControlPointMode GetControlPointMode (int index) {
+
+    public BezierControlPointMode GetControlPointMode (int index) {
 		return modes[(int)((index + 1) / 3)];
 	}
 
@@ -169,24 +173,78 @@ public class BezierSpline : MonoBehaviour {
 	public Vector3 GetDirection (float t) {
 		return GetVelocity(t).normalized;
 	}
-    public void AddCurve(Vector3 p0, Vector3 p1, Vector3 p2) {
-        Array.Resize(ref points, points.Length + 3);
-        points[points.Length - 3] = p0;
-        points[points.Length - 2] = p1;
-        points[points.Length - 1] = p2;
-
-        Array.Resize(ref modes, modes.Length + 1);
-        modes[modes.Length - 1] = modes[modes.Length - 2];
-        EnforceMode(points.Length - 4);
-
-        if (loop)
+    public bool AddCurve(List<Vector3> pointsList) {
+        
+        if (firstTime)
         {
-            points[points.Length - 1] = points[0];
-            modes[modes.Length - 1] = modes[0];
-            EnforceMode(0);
+            points[0] = pointsList[0];
+            points[1] = pointsList[1];
+            points[2] = pointsList[2];
+            points[3] = pointsList[3];
+            firstTime = false;
+        }
+        else
+        {
+            Array.Resize(ref points, points.Length + 3);
+            points[points.Length - 4] = pointsList[0];
+            points[points.Length - 3] = pointsList[1];
+            points[points.Length - 2] = pointsList[2];
+            points[points.Length - 1] = pointsList[3];
+            
+        }
+        List<GameObject> curveCol = new List<GameObject>();
+
+       
+        Vector3 point, nextPoint, direction;
+        for (int i = 0; i < 10; i++)
+        {
+            float t = (float)i / 10f;
+            float nextT = (float)(i + 1) / 10f;
+            point = Bezier.GetPoint(pointsList[0], pointsList[1], pointsList[2], pointsList[3], t);
+            direction = Bezier.GetFirstDerivative(pointsList[0], pointsList[1], pointsList[2], pointsList[3], t);
+            nextPoint = Bezier.GetPoint(pointsList[0], pointsList[1], pointsList[2], pointsList[3], nextT);
+            GameObject temp = Instantiate(colliderPrefab, point, Quaternion.LookRotation(direction)) as GameObject;
+            curveCol.Add(temp);
+            
+            curveCol[i].GetComponent<BoxCollider>().size = new Vector3(2, 2, Vector3.Distance(point, nextPoint));
+            
+
+
+        }
+        if (CheckCollisions(curveCol, curveColliders))
+        {
+            foreach (GameObject col in curveCol)
+            {
+                curveColliders.Add(col);
+            }
+            return true;
+        }
+        else
+        {
+            return false;
         }
     }
+        
+    
 
+    public bool CheckCollisions(List<GameObject> curveCol, List<GameObject> allCurvesCol)
+    {
+        bool returnVal = true;
+        for (int i= 0; i<curveCol.Count; i++)
+        {
+            for(int j=1; j<allCurvesCol.Count-1; j++)
+            {
+                bool res  = curveCol[i].GetComponent<BoxCollider>().bounds.Intersects(allCurvesCol[j].GetComponent<BoxCollider>().bounds);
+                
+                if(res == true)
+                {
+                    //GameObject temp = Instantiate(spherePrefab, curveCol[i].transform.position, curveCol[i].transform.rotation) as GameObject;
+                    returnVal = false;
+                }
+            }
+        }
+        return returnVal;
+    }
     public void AddCurve () {
 		Vector3 point = points[points.Length - 1];
 		Array.Resize(ref points, points.Length + 3);
@@ -207,7 +265,7 @@ public class BezierSpline : MonoBehaviour {
 			EnforceMode(0);
 		}
 	}
-
+    /*
     public void AddPoints(List<Vector3> newPoints)
     {
         int curveNum = 0;
@@ -220,30 +278,39 @@ public class BezierSpline : MonoBehaviour {
         for (int i = 4; i < newPoints.Count; i+=3)
         {
             curveNum += 1;
-            AddCurve(newPoints[i], newPoints[i + 1], newPoints[i + 2]);
+            77AddCurve(newPoints[i], newPoints[i + 1], newPoints[i + 2]);
             curves.Add(curveNum, new List<Vector3> { points[i-1], points[i], points[i+1], points[i+2] });
             //points[i] = newPoints[i];
         }
         Debug.Log("Punti: " + points.Length);
     }
-
+    */
     public void GenerateCollisions()
     {
-        int steps = stepsPerCurve * CurveCount;
+       /* int steps = stepsPerCurve * CurveCount;
         Vector3 point, nextPoint, direction;
-        curveColliders = new GameObject[steps];
+        curveColliders.Clear();
         for (int i = 0; i < steps; i++)
         {
             point = GetPoint(i / (float)steps);
             direction = GetVelocity(i / (float)steps);
             nextPoint = GetPoint((i + 1) / (float)steps);
-            curveColliders[i] = Instantiate(colliderPrefab,point,Quaternion.LookRotation(direction)) as GameObject;
+            GameObject temp = Instantiate(colliderPrefab, point, Quaternion.LookRotation(direction)) as GameObject;
+            curveColliders.Add(temp); 
             curveColliders[i].GetComponent<BoxCollider>().size = new Vector3(2,2,Vector3.Distance(point, nextPoint));
             /*curveColliders[i].GetComponent<BoxCollider>().bounds.Intersects(curveColliders[j].GetComponent<BoxCollider>().bounds)*/
-        }
+       // }
+       
     
     }
 
+    public void DestroyColliders()
+    {
+        foreach(GameObject col in curveColliders)
+        {
+            Destroy(col);
+        }
+    }
 
 
 

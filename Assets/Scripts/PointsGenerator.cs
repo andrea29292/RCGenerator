@@ -86,7 +86,9 @@ public class PointsGenerator : MonoBehaviour {
         return nextPoint;
     }
     Boolean GenTrackDone() {
-
+        spline.Reset();
+        spline.firstTime = true;
+        spline.DestroyColliders();
         DestroyTrack(); //destroy every point and collider GameObject
         totalPoints = Convert.ToInt32((trackLenght * MAX_POINTS) / MAX_LENGHT) / 3;
         totalPoints = totalPoints * 3;
@@ -202,10 +204,10 @@ public class PointsGenerator : MonoBehaviour {
         level = 1;
         List<Vector3> prevCurve = curvePoints[curvePoints.Count - 1];
         raiseLowerCurve(newCurve, prevCurve, level);
-        if (buildSpline(newCurve), prevCurve) return true;
+        if (buildSpline(newCurve, prevCurve)) return true;
         level = -1;
         raiseLowerCurve(newCurve, prevCurve, level);
-        if (buildSpline(newCurve), prevCurve) return true;
+        if (buildSpline(newCurve, prevCurve)) return true;
         return false;
 
     }
@@ -257,8 +259,8 @@ public class PointsGenerator : MonoBehaviour {
 
 
     Boolean buildSpline(List<Vector3> points) {
-        if (random.NextDouble() < 0.01f) return false;
-        return true;
+        return spline.AddCurve(points);
+        
     }
     Boolean buildSpline(List<Vector3> points, List<Vector3> prevPoints) {
         if (random.NextDouble() < 0.01f) return false;
@@ -328,9 +330,11 @@ public class PointsGenerator : MonoBehaviour {
         foreach (GameObject pointObject in pointsObject) {
             Destroy(pointObject);
         }
-        foreach (GameObject colliderObject in curveColliders) {
+        foreach (GameObject colliderObject in spline.curveColliders) {
             Destroy(colliderObject);
         }
+        
+        spline.curveColliders.Clear();
     }
 
 
