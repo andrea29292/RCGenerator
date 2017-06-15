@@ -117,7 +117,7 @@ public class ProceduralMesh : MonoBehaviour {
         mesh.uv = uvList.ToArray();
         mesh.RecalculateNormals();
         mesh.RecalculateBounds();
-        //mesh.Optimize();
+       
 
         return mesh;
     }
