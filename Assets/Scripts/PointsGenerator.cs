@@ -202,10 +202,10 @@ public class PointsGenerator : MonoBehaviour {
         level = 1;
         List<Vector3> prevCurve = curvePoints[curvePoints.Count - 1];
         raiseLowerCurve(newCurve, prevCurve, level);
-        if (buildSpline(newCurve), prevCurve) return true;
+        if (buildSpline(newCurve, prevCurve)) return true;
         level = -1;
         raiseLowerCurve(newCurve, prevCurve, level);
-        if (buildSpline(newCurve), prevCurve) return true;
+        if (buildSpline(newCurve, prevCurve)) return true;
         return false;
 
     }
