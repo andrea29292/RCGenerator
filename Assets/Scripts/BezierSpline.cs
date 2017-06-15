@@ -232,11 +232,12 @@ public class BezierSpline : MonoBehaviour {
 
     public bool CheckCollisions(List<GameObject> curveCol, List<GameObject> allCurvesCol)
     {
+       
 
-        for (int i= 0; i<curveCol.Count-1; i++)
+        for (int i= 0; i<curveCol.Count; i++)
         {
             
-            for(int j=0; j<allCurvesCol.Count-3; j++)
+            for(int j=0; j<allCurvesCol.Count-1; j++)
             {
                 bool res  = curveCol[i].GetComponent<BoxCollider>().bounds.Intersects(allCurvesCol[j].GetComponent<BoxCollider>().bounds);
                 
@@ -312,13 +313,21 @@ public class BezierSpline : MonoBehaviour {
        
     
     }
-
-    public void DestroyColliders()
+    public void DestroyLastCurve()
     {
-        foreach(GameObject col in curveColliders)
+        Array.Resize(ref points, points.Length - 3);
+        curveColliders.RemoveAt(curveColliders.Count-1);
+        curveColliders.RemoveAt(curveColliders.Count-2);
+        curveColliders.RemoveAt(curveColliders.Count-3);
+    }
+
+        public void DestroyColliders()
+    {
+        foreach(Transform child in collidersObj.GetComponentInChildren<Transform>())
         {
-            Destroy(col);
+            Destroy(child.gameObject);
         }
+        curveColliders.Clear();
     }
 
 

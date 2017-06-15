@@ -6,7 +6,7 @@ using UnityEngine.UI;
 public class PointsGenerator : MonoBehaviour {
 
     //constant
-    float RAISE = 2;
+    float RAISE =1.5f;
     int MAX_POINTS = 200;
     float MAX_LENGHT = 100;
     //GameObject Reference
@@ -88,7 +88,7 @@ public class PointsGenerator : MonoBehaviour {
     Boolean GenTrackDone() {
         spline.Reset();
         spline.firstTime = true;
-        spline.DestroyColliders();
+        
         DestroyTrack(); //destroy every point and collider GameObject
         totalPoints = Convert.ToInt32((trackLenght * MAX_POINTS) / MAX_LENGHT) / 3;
         totalPoints = totalPoints * 3;
@@ -263,8 +263,8 @@ public class PointsGenerator : MonoBehaviour {
         
     }
     Boolean buildSpline(List<Vector3> points, List<Vector3> prevPoints) {
-        if (random.NextDouble() < 0.01f) return false;
-        return true;
+        spline.DestroyLastCurve();
+        return spline.AddCurve(prevPoints) && spline.AddCurve(points);
     }
     //generate a new point toward the given point
     Vector3 ReachPoint(Vector3 anchor, Vector3 target, Vector3 center) {
@@ -330,11 +330,7 @@ public class PointsGenerator : MonoBehaviour {
         foreach (GameObject pointObject in pointsObject) {
             Destroy(pointObject);
         }
-        foreach (GameObject colliderObject in spline.curveColliders) {
-            Destroy(colliderObject);
-        }
-        
-        spline.curveColliders.Clear();
+        spline.DestroyColliders();
     }
 
 
