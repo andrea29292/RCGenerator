@@ -183,7 +183,7 @@ public class PointsGenerator : MonoBehaviour {
 
         spline.curves = new Dictionary<int, List<Vector3>>();
         
-        spline.GenerateCollisions();
+        //spline.GenerateCollisions();
         mesh.CreateMesh();
 
         //create GameObjects

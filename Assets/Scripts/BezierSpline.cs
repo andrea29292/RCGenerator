@@ -14,7 +14,7 @@ public class BezierSpline : MonoBehaviour {
     [SerializeField]
 	public Vector3[] points;
     public bool firstTime = true;
-    
+    public GameObject collidersObj;
 
 	[SerializeField]
 	private BezierControlPointMode[] modes;
@@ -205,7 +205,7 @@ public class BezierSpline : MonoBehaviour {
             nextPoint = Bezier.GetPoint(pointsList[0], pointsList[1], pointsList[2], pointsList[3], nextT);
             GameObject temp = Instantiate(colliderPrefab, point, Quaternion.LookRotation(direction)) as GameObject;
             curveCol.Add(temp);
-            
+                   
             curveCol[i].GetComponent<BoxCollider>().size = new Vector3(2, 2, Vector3.Distance(point, nextPoint));
             
 
@@ -213,10 +213,13 @@ public class BezierSpline : MonoBehaviour {
         }
         if (CheckCollisions(curveCol, curveColliders))
         {
+            GameObject wrapper = new GameObject();
             foreach (GameObject col in curveCol)
             {
                 curveColliders.Add(col);
+                col.transform.parent = wrapper.transform;
             }
+            wrapper.transform.parent = collidersObj.transform;
             return true;
         }
         else
@@ -229,21 +232,27 @@ public class BezierSpline : MonoBehaviour {
 
     public bool CheckCollisions(List<GameObject> curveCol, List<GameObject> allCurvesCol)
     {
-        bool returnVal = true;
-        for (int i= 0; i<curveCol.Count; i++)
+
+        for (int i= 0; i<curveCol.Count-1; i++)
         {
-            for(int j=1; j<allCurvesCol.Count-1; j++)
+            
+            for(int j=0; j<allCurvesCol.Count-3; j++)
             {
                 bool res  = curveCol[i].GetComponent<BoxCollider>().bounds.Intersects(allCurvesCol[j].GetComponent<BoxCollider>().bounds);
                 
                 if(res == true)
                 {
+                    foreach(GameObject col in curveCol)
+                    {
+                        Destroy(col);
+                    }
                     //GameObject temp = Instantiate(spherePrefab, curveCol[i].transform.position, curveCol[i].transform.rotation) as GameObject;
-                    returnVal = false;
+
+                    return false;
                 }
             }
         }
-        return returnVal;
+        return true;
     }
     public void AddCurve () {
 		Vector3 point = points[points.Length - 1];
