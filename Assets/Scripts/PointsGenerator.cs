@@ -6,7 +6,7 @@ using UnityEngine.UI;
 public class PointsGenerator : MonoBehaviour {
 
     //constant
-    float RAISE =1.5f;
+    float RAISE = 1.5f;
     int MAX_POINTS = 200;
     float MAX_LENGHT = 100;
     //GameObject Reference
@@ -39,6 +39,7 @@ public class PointsGenerator : MonoBehaviour {
     public GameObject[] curveColliders; //to detect intersections on the track
     public List<float> directions;  //just need it to rotate the collider
     //miscelaneus
+    Boolean go = true;
     int fromHereReach;
     int level = 0;
     System.Random random = new System.Random();
@@ -88,7 +89,7 @@ public class PointsGenerator : MonoBehaviour {
     Boolean GenTrackDone() {
         spline.Reset();
         spline.firstTime = true;
-        
+
         DestroyTrack(); //destroy every point and collider GameObject
         totalPoints = Convert.ToInt32((trackLenght * MAX_POINTS) / MAX_LENGHT) / 3;
         totalPoints = totalPoints * 3;
@@ -182,7 +183,7 @@ public class PointsGenerator : MonoBehaviour {
         CreateDots();
 
         spline.curves = new Dictionary<int, List<Vector3>>();
-        
+
         //spline.GenerateCollisions();
         mesh.CreateMesh();
 
@@ -201,13 +202,16 @@ public class PointsGenerator : MonoBehaviour {
 
     Boolean correctSpline(List<Vector3> newCurve) {
         if (buildSpline(newCurve)) return true;
-        level = 1;
+        /*level = 1;
         List<Vector3> prevCurve = curvePoints[curvePoints.Count - 1];
         raiseLowerCurve(newCurve, prevCurve, level);
         if (buildSpline(newCurve, prevCurve)) return true;
+
         level = -1;
         raiseLowerCurve(newCurve, prevCurve, level);
         if (buildSpline(newCurve, prevCurve)) return true;
+        */
+        Debug.Log("Questa pista non s'ha da fare");
         return false;
 
     }
@@ -217,7 +221,7 @@ public class PointsGenerator : MonoBehaviour {
             newCurve[i] = new Vector3(newCurve[i].x, RAISE * level, newCurve[i].z);
         //we also need to raise/lower the last two points of the previous curve
         prevCurve[2] = new Vector3(prevCurve[2].x, RAISE * level, prevCurve[2].z);
-        prevCurve[3] = new Vector3(prevCurve[3].x, RAISE * level, prevCurve[3].z);
+        prevCurve[3] = newCurve[0];
     }
     List<Vector3> reachFirstPoint(ref Vector3 lastPoint, Vector3 startPoint) {
         List<Vector3> newCurvePoint = new List<Vector3>();
@@ -260,7 +264,7 @@ public class PointsGenerator : MonoBehaviour {
 
     Boolean buildSpline(List<Vector3> points) {
         return spline.AddCurve(points);
-        
+
     }
     Boolean buildSpline(List<Vector3> points, List<Vector3> prevPoints) {
         spline.DestroyLastCurve();
