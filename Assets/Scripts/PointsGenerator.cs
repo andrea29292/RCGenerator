@@ -188,7 +188,7 @@ public class PointsGenerator : MonoBehaviour {
         spline.curves = new Dictionary<int, List<Vector3>>();
 
         //spline.GenerateCollisions();
-        mesh.CreateMesh();
+       
 
         //create GameObjects
         //CreateDots();
@@ -204,7 +204,12 @@ public class PointsGenerator : MonoBehaviour {
     }
 
     Boolean correctSpline(List<Vector3> newCurve) {
-        if (buildSpline(newCurve)) return true;
+        /*if (buildSpline(newCurve))*/
+        {
+            buildSpline(newCurve);
+            mesh.CreateMesh();
+            return true;
+        }
         /*level = 1;
         List<Vector3> prevCurve = curvePoints[curvePoints.Count - 1];
         raiseLowerCurve(newCurve, prevCurve, level);

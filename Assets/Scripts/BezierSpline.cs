@@ -208,7 +208,7 @@ public class BezierSpline : MonoBehaviour {
             point = Bezier.GetPoint(pointsList[0], pointsList[1], pointsList[2], pointsList[3], t);
             direction = Bezier.GetFirstDerivative(pointsList[0], pointsList[1], pointsList[2], pointsList[3], t);
             nextPoint = Bezier.GetPoint(pointsList[0], pointsList[1], pointsList[2], pointsList[3], nextT);
-            Vector3 collPos = new Vector3(point.x, point.y + 1, point.z);
+            Vector3 collPos = new Vector3(point.x, point.y, point.z);
             GameObject temp = Instantiate(colliderPrefab, collPos, Quaternion.LookRotation(direction)) as GameObject;
             temp.GetComponent<BoxCollider>().size = new Vector3(2f,2f, Vector3.Distance(point, nextPoint));
 
@@ -234,14 +234,16 @@ public class BezierSpline : MonoBehaviour {
     public bool CheckCollisions(List<GameObject> curveCol, List<GameObject> allCurvesCol) {
 
         
-        for(int i=0; i<curveCol.Count; i++)
-            for(int j = 0; j < allCurvesCol.Count; j++) {
+        for(int i=0; i<curveCol.Count-2; i++)
+            for(int j = 0; j < allCurvesCol.Count-1; j++) {
                 if (i == 0 && j == allCurvesCol.Count - 1) continue;
                 if (curveCol[i].GetComponent<BoxCollider>().bounds.Intersects(allCurvesCol[j].GetComponent<BoxCollider>().bounds)) {
-                    //foreach(GameObject coll in curveCol) Destroy(coll);
+                    GameObject temp = Instantiate(spherePrefab, curveCol[i].transform.position, Quaternion.identity) as GameObject;
+                    //foreach (GameObject coll in curveCol) Destroy(coll);
 
-                    Debug.Log("Collision beetwen new: " + i + " at "+curveCol[i].transform.position+" & old : " + j+" at "+allCurvesCol[j].transform.position);
-                    return false; }
+                    //Debug.Log("Collision beetwen new: " + i + " at "+curveCol[i].transform.position+" & old : " + j+" at "+allCurvesCol[j].transform.position);
+                    //return false;
+                }
             }
         return true;
 
@@ -331,7 +333,7 @@ public class BezierSpline : MonoBehaviour {
             BezierControlPointMode.Free
         };
     }
-
+    /*
     public void Update() {
         Boolean collision = false;
         for(int i=0; i< curveColliders.Count;i++)
@@ -342,6 +344,6 @@ public class BezierSpline : MonoBehaviour {
             }
         Debug.Log("Collision: "+collision);
 
-    }
+    }*/
 
 }
