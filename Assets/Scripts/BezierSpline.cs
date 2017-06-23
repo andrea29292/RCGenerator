@@ -206,7 +206,7 @@ public class BezierSpline : MonoBehaviour {
             GameObject temp = Instantiate(colliderPrefab, point, Quaternion.LookRotation(direction)) as GameObject;
             curveCol.Add(temp);
                    
-            curveCol[i].GetComponent<BoxCollider>().size = new Vector3(2, 2, Vector3.Distance(point, nextPoint));
+            curveCol[i].GetComponent<BoxCollider>().size = new Vector3(2f,2f, Vector3.Distance(point, nextPoint));
             
 
 
@@ -232,12 +232,13 @@ public class BezierSpline : MonoBehaviour {
 
     public bool CheckCollisions(List<GameObject> curveCol, List<GameObject> allCurvesCol)
     {
-       
+        Debug.Log(curveCol.Count);
+        Debug.Log(allCurvesCol.Count);
 
-        for (int i= 0; i<curveCol.Count; i++)
+        for (int i= 0; i<curveCol.Count-1; i++)
         {
             
-            for(int j=0; j<allCurvesCol.Count-1; j++)
+            for(int j=1; j<allCurvesCol.Count-2; j++)
             {
                 bool res  = curveCol[i].GetComponent<BoxCollider>().bounds.Intersects(allCurvesCol[j].GetComponent<BoxCollider>().bounds);
                 
@@ -315,13 +316,14 @@ public class BezierSpline : MonoBehaviour {
     }
     public void DestroyLastCurve()
     {
+
         Array.Resize(ref points, points.Length - 3);
-        curveColliders.RemoveAt(curveColliders.Count-1);
-        curveColliders.RemoveAt(curveColliders.Count-2);
-        curveColliders.RemoveAt(curveColliders.Count-3);
+    
+
+
     }
 
-        public void DestroyColliders()
+    public void DestroyColliders()
     {
         foreach(Transform child in collidersObj.GetComponentInChildren<Transform>())
         {

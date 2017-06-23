@@ -134,6 +134,7 @@ public class PointsGenerator : MonoBehaviour {
 
             if (!correctSpline(newCurvePoint)) return false;
             curvePoints.Add(newCurvePoint);
+            //buildSpline(newCurvePoint);
 
 
         }
@@ -149,6 +150,7 @@ public class PointsGenerator : MonoBehaviour {
             }
             if (!correctSpline(newCurve)) return false;
             curvePoints.Add(newCurve);
+            //buildSpline(newCurve);
             k++;
             if (k >= totalPoints / 2) { Debug.Log("EXIT: cannot reach start"); return false; }
         }
@@ -164,6 +166,7 @@ public class PointsGenerator : MonoBehaviour {
             }
             if (!correctSpline(newCurve)) return false;
             curvePoints.Add(newCurve);
+            //buildSpline(newCurve);
             k++;
             if (k >= totalPoints / 2) return false;
         }
@@ -187,7 +190,7 @@ public class PointsGenerator : MonoBehaviour {
         mesh.CreateMesh();
 
         //create GameObjects
-        CreateDots();
+        //CreateDots();
 
 
         //pline.AddPoints(points);
@@ -200,14 +203,28 @@ public class PointsGenerator : MonoBehaviour {
     }
 
     Boolean correctSpline(List<Vector3> newCurve) {
-        if (buildSpline(newCurve)) return true;
+        if (buildSpline(newCurve))
+        {
+            mesh.CreateMesh();
+            return true;
+        }
         level = 1;
         List<Vector3> prevCurve = curvePoints[curvePoints.Count - 1];
         raiseLowerCurve(newCurve, prevCurve, level);
-        if (buildSpline(newCurve, prevCurve)) return true;
+        if (buildSpline(newCurve, prevCurve))
+        {
+            mesh.CreateMesh();
+            Debug.Log("Primo true");
+            return true;
+        }
         level = -1;
         raiseLowerCurve(newCurve, prevCurve, level);
-        if (buildSpline(newCurve, prevCurve)) return true;
+        if (buildSpline(newCurve, prevCurve))
+        {
+            mesh.CreateMesh();
+            Debug.Log("Secondo true");
+            return true;
+        }
         return false;
 
     }
@@ -264,7 +281,10 @@ public class PointsGenerator : MonoBehaviour {
     }
     Boolean buildSpline(List<Vector3> points, List<Vector3> prevPoints) {
         spline.DestroyLastCurve();
+        Debug.Log(spline.AddCurve(prevPoints)&& spline.AddCurve(points));
+
         return spline.AddCurve(prevPoints) && spline.AddCurve(points);
+       
     }
     //generate a new point toward the given point
     Vector3 ReachPoint(Vector3 anchor, Vector3 target, Vector3 center) {
