@@ -340,7 +340,7 @@ public class PointsGenerator : MonoBehaviour {
         foreach (GameObject pointObject in pointsObject) {
             Destroy(pointObject);
         }
-        spline.DestroyColliders();
+        //spline.DestroyColliders();
     }
 
 

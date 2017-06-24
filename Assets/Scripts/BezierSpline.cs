@@ -4,8 +4,10 @@ using System.Collections;
 using System.Collections.Generic;
 
 public class BezierSpline : MonoBehaviour {
-
-
+    int aiuto = 0;
+    bool vai = false;
+    public GameObject pointPrefab;
+    int controlRes = 5;
     public Dictionary<int, List<Vector3>> curves = new Dictionary<int, List<Vector3>>();
     public List<GameObject> curveColliders; //to detect intersections on the track
     public int stepsPerCurve = 5;
@@ -13,6 +15,7 @@ public class BezierSpline : MonoBehaviour {
     public GameObject spherePrefab;
     [SerializeField]
     public Vector3[] points;
+    public List<Vector3> controlPoints = new List<Vector3>();
     public bool firstTime = true;
     public GameObject collidersObj;
     public List<GameObject> curveCol;
@@ -198,33 +201,21 @@ public class BezierSpline : MonoBehaviour {
             points[points.Length - 1] = pointsList[3];
 
         }
-        curveCol = new List<GameObject>();
 
 
         Vector3 point, nextPoint, direction;
         distances = new List<float>();
-        for (int i = 0; i < 10; i++) {
-            float t = (float)i / 10f;
-            float nextT = (float)(i + 1) / 10f;
+        List<Vector3> newPoints = new List<Vector3>();
+        for (int i = 0; i < controlRes; i++) {
+            float t = (float)i / controlRes;
             point = Bezier.GetPoint(pointsList[0], pointsList[1], pointsList[2], pointsList[3], t);
-            direction = Bezier.GetFirstDerivative(pointsList[0], pointsList[1], pointsList[2], pointsList[3], t);
-            nextPoint = Bezier.GetPoint(pointsList[0], pointsList[1], pointsList[2], pointsList[3], nextT);
-            Vector3 collPos = new Vector3(point.x, point.y, point.z);
-            GameObject temp = Instantiate(colliderPrefab, collPos, Quaternion.LookRotation(direction)) as GameObject;
-            float distance = Vector3.Distance(point, nextPoint);
-            temp.GetComponent<BoxCollider>().size = new Vector3(2f, 2f,distance);
-            distances.Add(distance);
+            newPoints.Add(point);
+            GameObject temp = Instantiate(pointPrefab, point, Quaternion.identity) as GameObject;
 
-            curveCol.Add(temp);
 
         }
-        if (CheckCollisions(curveCol, curveColliders)) {
-            GameObject wrapper = new GameObject();
-            foreach (GameObject col in curveCol) {
-                curveColliders.Add(col);
-                col.transform.parent = wrapper.transform;
-            }
-            wrapper.transform.parent = collidersObj.transform;
+        if (CheckCollisions(newPoints, controlPoints)) {
+            foreach (Vector3 newPoint in newPoints) controlPoints.Add(newPoint);
             return true;
         }
         else {
@@ -234,77 +225,30 @@ public class BezierSpline : MonoBehaviour {
 
 
 
-    public bool CheckCollisions(List<GameObject> curveCol, List<GameObject> allCurvesCol) {
+    public bool CheckCollisions(List<Vector3> newPoints, List<Vector3> stablePoints) {
+
+        return CheckIntersect(newPoints, stablePoints);
 
 
-        for (int i = 0; i < curveCol.Count; i++)
-            for (int j = 0; j < allCurvesCol.Count - 1; j++) {
-                if (CheckBoxIntersection(curveCol[i], allCurvesCol[j], distances[i])) { 
-                    GameObject temp = Instantiate(spherePrefab, curveCol[i].transform.position, Quaternion.identity) as GameObject;
-                    //foreach (GameObject coll in curveCol) Destroy(coll);
+    }
 
-                    Debug.Log("Collision beetwen new: " + i + " at " + curveCol[i].transform.position + " & old : " + j + " at " + allCurvesCol[j].transform.position);
-                    Vector3 last = allCurvesCol[j].transform.position;
-                    allCurvesCol[j].transform.position = new Vector3(last.x, last.y + 1, last.z);
-                    Vector3 current = curveCol[i].transform.position;
-                    curveCol[i].transform.position = new Vector3(current.x, current.y + 1, current.z);
+    bool CheckIntersect(List<Vector3> newPoints, List<Vector3> stablePoints) {
+        for (int i = 0; i < newPoints.Count - 2; i++)
+            for (int j = 0; j < stablePoints.Count - 3; j++) {
+
+                //Vector3 intersectPoint = new Vector3();
+                bool intersect = Math3d.AreLineSegmentsCrossing(newPoints[i], newPoints[i + 1], stablePoints[j], stablePoints[j + 1]);
+                if (intersect) {
+                    Debug.Log("new " + i + " stable " + j);
+
+                    //GameObject temp = Instantiate(spherePrefab, intersectPoint, Quaternion.identity) as GameObject;
                     return false;
                 }
             }
         return true;
-
     }
 
-    Boolean CheckBoxIntersection(GameObject obj1, GameObject obj2, float distance) {
-        //Get the mesh you want to check
-        /*Vector3 center = obj1.transform.position;
-        Vector3 size = new Vector3(2,2,distance);
-        Vector3 extents = size * 0.5f; ;
-        Vector3[] vertices = new Vector3[8];
-        vertices[0] = center + new Vector3(extents.x, extents.y, extents.z);
-        vertices[1] = center + new Vector3(extents.x, extents.y, -extents.z);
-        vertices[2] = center + new Vector3(extents.x, -extents.y, extents.z);
-        vertices[3] = center + new Vector3(extents.x, -extents.y, -extents.z);
-        vertices[4] = center + new Vector3(-extents.x, extents.y, extents.z);
-        vertices[5] = center + new Vector3(-extents.x, extents.y, -extents.z);
-        vertices[6] = center + new Vector3(-extents.x, -extents.y, extents.z);
-        vertices[7] = center + new Vector3(-extents.x, -extents.y, -extents.z);
 
-        for (int i = 0; i < 8; i++) {
-            vertices[i] = transform.TransformPoint(vertices[i]);
-        }*/
-        Mesh mesh = obj1.GetComponent<MeshFilter>().mesh;
-        Vector3[] vertices = mesh.vertices;
-        /*Vector3[] vertices = new Vector3[8];
-            Matrix4x4 thisMatrix = obj1.transform.localToWorldMatrix;
-            Quaternion storedRotation = obj1.transform.rotation;
-            obj1.transform.rotation = Quaternion.identity;
-
-            Vector3 extents = obj1.GetComponent<BoxCollider>().bounds.extents;
-            vertices[0] = thisMatrix.MultiplyPoint3x4(extents);
-            vertices[1] = thisMatrix.MultiplyPoint3x4(new Vector3(-extents.x, extents.y, extents.z));
-            vertices[2] = thisMatrix.MultiplyPoint3x4(new Vector3(extents.x, extents.y, -extents.z));
-            vertices[3] = thisMatrix.MultiplyPoint3x4(new Vector3(-extents.x, extents.y, -extents.z));
-            vertices[4] = thisMatrix.MultiplyPoint3x4(new Vector3(extents.x, -extents.y, extents.z));
-            vertices[5] = thisMatrix.MultiplyPoint3x4(new Vector3(-extents.x, -extents.y, extents.z));
-            vertices[6] = thisMatrix.MultiplyPoint3x4(new Vector3(extents.x, -extents.y, -extents.z));
-            vertices[7] = thisMatrix.MultiplyPoint3x4(-extents);
-            
-            obj1.transform.rotation = storedRotation;*/
-            
-        
-
-        for (int i = 0; i < vertices.Length; i++) {
-            //Raycast from the middle to each vertex
-            Ray ray = new Ray(obj1.transform.position, obj2.transform.TransformPoint(vertices[i]));
-
-            RaycastHit hit;
-
-            if (Physics.Raycast(ray, out hit, 100))
-                return false;
-        }
-        return true;
-    }
 
     public void AddCurve() {
         Vector3 point = points[points.Length - 1];
@@ -346,23 +290,7 @@ public class BezierSpline : MonoBehaviour {
         Debug.Log("Punti: " + points.Length);
     }
     */
-    public void GenerateCollisions() {
-        /* int steps = stepsPerCurve * CurveCount;
-         Vector3 point, nextPoint, direction;
-         curveColliders.Clear();
-         for (int i = 0; i < steps; i++)
-         {
-             point = GetPoint(i / (float)steps);
-             direction = GetVelocity(i / (float)steps);
-             nextPoint = GetPoint((i + 1) / (float)steps);
-             GameObject temp = Instantiate(colliderPrefab, point, Quaternion.LookRotation(direction)) as GameObject;
-             curveColliders.Add(temp); 
-             curveColliders[i].GetComponent<BoxCollider>().size = new Vector3(2,2,Vector3.Distance(point, nextPoint));
-             /*curveColliders[i].GetComponent<BoxCollider>().bounds.Intersects(curveColliders[j].GetComponent<BoxCollider>().bounds)*/
-        // }
 
-
-    }
     public void DestroyLastCurve() {
         Array.Resize(ref points, points.Length - 3);
         curveColliders.RemoveAt(curveColliders.Count - 1);
@@ -393,18 +321,7 @@ public class BezierSpline : MonoBehaviour {
     }
 
     public void Update() {
-
-        Boolean collision = false;
-        for (int i = 0; i < curveColliders.Count; i++)
-            for (int j = 0; j < curveCol.Count; j++) {
-                if (i == j || Math.Abs(i - j) == 1) continue;
-                if (curveColliders[i].GetComponent<BoxCollider>().bounds.Intersects(curveCol[j].GetComponent<BoxCollider>().bounds)) {
-                    collision = true;
-                }
-
-            }
-        Debug.Log("Collision: " + collision);
-
+        
     }
 
 }
