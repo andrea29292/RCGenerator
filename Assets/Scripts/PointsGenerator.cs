@@ -111,7 +111,7 @@ public class PointsGenerator : MonoBehaviour {
         float howFar = 3 + farPointDistance * (1 - maxAngleD / 45);
         farReturnPoint = Support.MovePoint(startPoint, (float)(direction - 180), howFar);
 
-        for (int i = 0; i < totalPoints / 3; i++) {
+        for (int i = 0; i < totalPoints / 3; i++) { //foreach curve
             List<Vector3> newCurvePoint = new List<Vector3>();
             Vector3 secPoint;
             if (i == 0) {
@@ -119,8 +119,8 @@ public class PointsGenerator : MonoBehaviour {
                 secPoint = randomPoint(startPoint, direction);
             }
             else {
-                newCurvePoint.Add(curvePoints[curvePoints.Count - 1][3]);
-                secPoint = Support.MovePoint(newCurvePoint[0], direction, segmentLen);
+                newCurvePoint.Add(curvePoints[curvePoints.Count - 1][3]);   //add the last point of the previous curve as my first
+                secPoint = Support.MovePoint(newCurvePoint[0], direction, segmentLen);  //go "random"
                 directions.Add(direction);
             }
             if (level != 0) {
@@ -210,6 +210,7 @@ public class PointsGenerator : MonoBehaviour {
         prevCurve[2] = new Vector3(prevCurve[2].x, RAISE * level, prevCurve[2].z);
         prevCurve[3] = newCurve[0];
     }
+    //
     List<Vector3> reachFirstPoint(ref Vector3 lastPoint, Vector3 startPoint) {
         List<Vector3> newCurvePoint = new List<Vector3>();
         newCurvePoint.Add(lastPoint);
@@ -220,6 +221,7 @@ public class PointsGenerator : MonoBehaviour {
         Vector3 frtPoint;
         if (Vector3.Distance(trdPoint, startPoint) < segmentLen * 4) {
             frtPoint = startPoint;
+            trdPoint = Support.MovePoint(curvePoints[0][0], directions[0], segmentLen);
         }
         else {
             anchor = Support.MovePoint(trdPoint, direction, segmentLen);
