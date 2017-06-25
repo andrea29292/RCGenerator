@@ -86,6 +86,7 @@ public class PointsGenerator : MonoBehaviour {
         directions.Add(direction);
         return nextPoint;
     }
+
     Boolean GenTrackDone() {
         spline.Reset();
         spline.firstTime = true;
@@ -171,31 +172,15 @@ public class PointsGenerator : MonoBehaviour {
             k++;
             if (k >= totalPoints / 2) return false;
         }
-        //totalPoints = points.Count;
-        //directions.Add(Support.WhichCurve(points[points.Count - 1], points[0], directions[directions.Count - 1], segmentLen));  //add last direction for the initial point
-        //check if we can arrange the number of point for draw the bezier
-        //if (RemoveSomePoints() == false) return false;
+        
 
         pointsObject = new List<GameObject>();
 
 
-        //check eventually crossing of the track
 
-        //CrossingFix();
-        //create GameObjects
         CreateDots();
 
-        spline.curves = new Dictionary<int, List<Vector3>>();
-
-        //spline.GenerateCollisions();
-
-
-        //create GameObjects
-        //CreateDots();
-
-
-        //pline.AddPoints(points);
-        //mesh.CreateMesh();
+        spline.curves = new Dictionary<int, List<Vector3>>();   
 
 
 
@@ -205,15 +190,14 @@ public class PointsGenerator : MonoBehaviour {
 
     Boolean correctSpline(List<Vector3> newCurve) {
         if (buildSpline(newCurve)) return true;
-        /*level = 1;
+        level = 1;
         List<Vector3> prevCurve = curvePoints[curvePoints.Count - 1];
         raiseLowerCurve(newCurve, prevCurve, level);
         if (buildSpline(newCurve, prevCurve)) return true;
-
         level = -1;
         raiseLowerCurve(newCurve, prevCurve, level);
         if (buildSpline(newCurve, prevCurve)) return true;
-        */
+        spline.ClearIntersectionPoints();
         Debug.Log("Questa pista non s'ha da fare");
         return false;
 
@@ -340,7 +324,6 @@ public class PointsGenerator : MonoBehaviour {
         foreach (GameObject pointObject in pointsObject) {
             Destroy(pointObject);
         }
-        //spline.DestroyColliders();
     }
 
 

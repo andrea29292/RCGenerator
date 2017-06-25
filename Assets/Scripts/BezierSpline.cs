@@ -4,21 +4,20 @@ using System.Collections;
 using System.Collections.Generic;
 
 public class BezierSpline : MonoBehaviour {
-    int aiuto = 0;
-    bool vai = false;
-    public GameObject pointPrefab;
-    int controlRes = 5;
+
+    //intersection control structure
+    public List<Vector3> intersectionPoints = new List<Vector3>();
+    public GameObject pointPrefab;  //to see controlPoints
+    int controlRes = 4;
+
     public Dictionary<int, List<Vector3>> curves = new Dictionary<int, List<Vector3>>();
-    public List<GameObject> curveColliders; //to detect intersections on the track
     public int stepsPerCurve = 5;
     public GameObject colliderPrefab;
     public GameObject spherePrefab;
     [SerializeField]
     public Vector3[] points;
-    public List<Vector3> controlPoints = new List<Vector3>();
     public bool firstTime = true;
-    public GameObject collidersObj;
-    public List<GameObject> curveCol;
+
     List<float> distances;
     [SerializeField]
     private BezierControlPointMode[] modes;
@@ -203,19 +202,16 @@ public class BezierSpline : MonoBehaviour {
         }
 
 
-        Vector3 point, nextPoint, direction;
-        distances = new List<float>();
-        List<Vector3> newPoints = new List<Vector3>();
+
+        List<Vector3> newPoints = new List<Vector3>();  //needs to be checked before adding them to intersectionPoints
         for (int i = 0; i < controlRes; i++) {
             float t = (float)i / controlRes;
-            point = Bezier.GetPoint(pointsList[0], pointsList[1], pointsList[2], pointsList[3], t);
+            Vector3 point = Bezier.GetPoint(pointsList[0], pointsList[1], pointsList[2], pointsList[3], t);
             newPoints.Add(point);
             GameObject temp = Instantiate(pointPrefab, point, Quaternion.identity) as GameObject;
-
-
         }
-        if (CheckCollisions(newPoints, controlPoints)) {
-            foreach (Vector3 newPoint in newPoints) controlPoints.Add(newPoint);
+        if (CheckCollisions(newPoints, intersectionPoints)) {
+            foreach (Vector3 newPoint in newPoints) intersectionPoints.Add(newPoint);
             return true;
         }
         else {
@@ -232,16 +228,13 @@ public class BezierSpline : MonoBehaviour {
 
     }
 
-    bool CheckIntersect(List<Vector3> newPoints, List<Vector3> stablePoints) {
+    //foreach new point, check if the segments build on i and i+1 intersect with any other old points
+    bool CheckIntersect(List<Vector3> newPoints, List<Vector3> oldPoints) {
         for (int i = 0; i < newPoints.Count - 2; i++)
-            for (int j = 0; j < stablePoints.Count - 3; j++) {
-
-                //Vector3 intersectPoint = new Vector3();
-                bool intersect = Math3d.AreLineSegmentsCrossing(newPoints[i], newPoints[i + 1], stablePoints[j], stablePoints[j + 1]);
+            for (int j = 0; j < oldPoints.Count - 3; j++) { //skip the last segment
+                bool intersect = Math3d.AreLineSegmentsCrossing(newPoints[i], newPoints[i + 1], oldPoints[j], oldPoints[j + 1]);
                 if (intersect) {
                     Debug.Log("new " + i + " stable " + j);
-
-                    //GameObject temp = Instantiate(spherePrefab, intersectPoint, Quaternion.identity) as GameObject;
                     return false;
                 }
             }
@@ -293,19 +286,14 @@ public class BezierSpline : MonoBehaviour {
 
     public void DestroyLastCurve() {
         Array.Resize(ref points, points.Length - 3);
-        curveColliders.RemoveAt(curveColliders.Count - 1);
-        curveColliders.RemoveAt(curveColliders.Count - 2);
-        curveColliders.RemoveAt(curveColliders.Count - 3);
-    }
 
-    public void DestroyColliders() {
-        foreach (Transform child in collidersObj.GetComponentInChildren<Transform>()) {
-            Destroy(child.gameObject);
-        }
-        curveColliders.Clear();
     }
 
 
+    //if the track cannot be done, delete all intersectionPoints cause we need to check again for intersection
+    public void ClearIntersectionPoints() {
+        intersectionPoints.Clear();
+    }
 
     public void Reset() {
         points = new Vector3[] {
@@ -321,7 +309,7 @@ public class BezierSpline : MonoBehaviour {
     }
 
     public void Update() {
-        
+
     }
 
 }
