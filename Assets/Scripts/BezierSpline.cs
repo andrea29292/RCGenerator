@@ -9,7 +9,7 @@ public class BezierSpline : MonoBehaviour {
     public List<Vector3> intersectionPoints = new List<Vector3>();
     public GameObject pointPrefab;  //to see controlPoints
     int controlRes = 4;
-
+    public Dictionary<Vector3, Vector3> pointsAndDirections = new Dictionary<Vector3, Vector3>();
     public Dictionary<int, List<Vector3>> curves = new Dictionary<int, List<Vector3>>();
     public int stepsPerCurve = 5;
     public GameObject colliderPrefab;
@@ -202,13 +202,16 @@ public class BezierSpline : MonoBehaviour {
         }
 
 
-
+        pointsAndDirections.Clear();
         List<Vector3> newPoints = new List<Vector3>();  //needs to be checked before adding them to intersectionPoints
         for (int i = 0; i < controlRes; i++) {
             float t = (float)i / controlRes;
             Vector3 point = Bezier.GetPoint(pointsList[0], pointsList[1], pointsList[2], pointsList[3], t);
+            Vector3 dir = Bezier.GetFirstDerivative(pointsList[0], pointsList[1], pointsList[2], pointsList[3], t);
             newPoints.Add(point);
-            GameObject temp = Instantiate(pointPrefab, point, Quaternion.identity) as GameObject;
+            pointsAndDirections.Add(point, dir);
+            
+            //GameObject temp = Instantiate(pointPrefab, point, Quaternion.identity) as GameObject;
         }
         if (CheckCollisions(newPoints, intersectionPoints)) {
             foreach (Vector3 newPoint in newPoints) intersectionPoints.Add(newPoint);
@@ -223,7 +226,8 @@ public class BezierSpline : MonoBehaviour {
 
     public bool CheckCollisions(List<Vector3> newPoints, List<Vector3> stablePoints) {
 
-        return CheckIntersect(newPoints, stablePoints);
+        return CheckPlaneIntersect(newPoints, stablePoints);
+        //return CheckIntersect(newPoints, stablePoints);
 
 
     }
@@ -240,7 +244,42 @@ public class BezierSpline : MonoBehaviour {
             }
         return true;
     }
+    bool CheckPlaneIntersect(List<Vector3> newPoints, List<Vector3> oldPoints)
+    {
+        
+        foreach (Vector3 pt in newPoints)
+        {
+            Vector3 dir = pointsAndDirections[pt];
+            GameObject col = Instantiate(colliderPrefab, new Vector3(pt.x, pt.y-0.01f, pt.z), Quaternion.LookRotation(dir)) as GameObject;
 
+            Vector3[] verts = new Vector3[4];        // Array that will contain the BOX Collider Vertices
+            BoxCollider b = col.GetComponent<BoxCollider>();
+            
+            verts[0] = pt + new Vector3(b.size.x, -b.size.y, b.size.z) * 0.5f;
+            verts[1] = pt + new Vector3(-b.size.x, -b.size.y, b.size.z) * 0.5f;
+            verts[2] = pt + new Vector3(-b.size.x, -b.size.y, -b.size.z) * 0.5f;
+            verts[3] = pt + new Vector3(b.size.x, -b.size.y, -b.size.z) * 0.5f;
+            
+            Vector3 r0 = verts[0];
+            Vector3 r1 = verts[1];
+            Vector3 r2 = verts[2];
+            Vector3 r3 = verts[3];
+            //GameObject temp = Instantiate(pointPrefab, r0, Quaternion.identity) as GameObject;
+            //GameObject temp1 = Instantiate(pointPrefab, r1, Quaternion.identity) as GameObject;
+            //GameObject temp2 = Instantiate(pointPrefab, r2, Quaternion.identity) as GameObject;
+            //GameObject temp3 = Instantiate(pointPrefab, r3, Quaternion.identity) as GameObject;
+            foreach (Vector3 oldPt in oldPoints)
+            {
+                if(Math3d.IsPointInRectangle(oldPt, r0, r1, r2, r3))
+                {
+                    Debug.Log("Intersezione: " + pt + " con: " + oldPt);
+                  
+                    //return false;
+                }
+            }
+        }
+        return true;
+    }
 
 
     public void AddCurve() {
