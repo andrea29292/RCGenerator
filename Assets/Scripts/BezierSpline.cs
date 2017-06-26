@@ -183,7 +183,7 @@ public class BezierSpline : MonoBehaviour {
     public Vector3 GetDirection(float t) {
         return GetVelocity(t).normalized;
     }
-    public bool AddCurve(List<Vector3> pointsList) {
+    public bool AddCurve(List<Vector3> pointsList, bool lastCurve) {
 
         if (firstTime) {
             points[0] = pointsList[0];
@@ -210,7 +210,7 @@ public class BezierSpline : MonoBehaviour {
             newPoints.Add(point);
             GameObject temp = Instantiate(pointPrefab, point, Quaternion.identity) as GameObject;
         }
-        if (CheckCollisions(newPoints, intersectionPoints)) {
+        if (CheckCollisions(newPoints, intersectionPoints, lastCurve)) {
             foreach (Vector3 newPoint in newPoints) intersectionPoints.Add(newPoint);
             return true;
         }
@@ -221,17 +221,18 @@ public class BezierSpline : MonoBehaviour {
 
 
 
-    public bool CheckCollisions(List<Vector3> newPoints, List<Vector3> stablePoints) {
+    public bool CheckCollisions(List<Vector3> newPoints, List<Vector3> stablePoints, bool lastCurve) {
 
-        return CheckIntersect(newPoints, stablePoints);
+        return CheckIntersect(newPoints, stablePoints, lastCurve);
 
 
     }
 
     //foreach new point, check if the segments build on i and i+1 intersect with any other old points
-    bool CheckIntersect(List<Vector3> newPoints, List<Vector3> oldPoints) {
+    bool CheckIntersect(List<Vector3> newPoints, List<Vector3> oldPoints, bool lastCurve) {
         for (int i = 0; i < newPoints.Count - 2; i++)
             for (int j = 0; j < oldPoints.Count - 3; j++) { //skip the last segment
+                if (lastCurve && j == 0) continue; 
                 bool intersect = Math3d.AreLineSegmentsCrossing(newPoints[i], newPoints[i + 1], oldPoints[j], oldPoints[j + 1]);
                 if (intersect) {
                     Debug.Log("new " + i + " stable " + j);
