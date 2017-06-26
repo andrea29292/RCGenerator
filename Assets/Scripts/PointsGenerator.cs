@@ -135,7 +135,7 @@ public class PointsGenerator : MonoBehaviour {
             newCurvePoint.Add(trdpoint);
             newCurvePoint.Add(frtPoint);
 
-            if (!correctSpline(newCurvePoint)) return false;
+            if (!correctSpline(newCurvePoint, false)) return false;
             curvePoints.Add(newCurvePoint);
             //buildSpline(newCurvePoint);
 
@@ -151,7 +151,7 @@ public class PointsGenerator : MonoBehaviour {
                 newCurve[1] = new Vector3(newCurve[1].x, RAISE * level, newCurve[1].z);
                 level = 0;
             }
-            if (!correctSpline(newCurve)) return false;
+            if (!correctSpline(newCurve,false)) return false;
             curvePoints.Add(newCurve);
             //buildSpline(newCurve);
             k++;
@@ -167,7 +167,7 @@ public class PointsGenerator : MonoBehaviour {
                 newCurve[1] = new Vector3(newCurve[1].x, RAISE * level, newCurve[1].z);
                 level = 0;
             }
-            if (!correctSpline(newCurve)) return false;
+            if (!correctSpline(newCurve, true)) return false;
             curvePoints.Add(newCurve);
             //buildSpline(newCurve);
             k++;
@@ -189,15 +189,15 @@ public class PointsGenerator : MonoBehaviour {
         return true;
     }
 
-    Boolean correctSpline(List<Vector3> newCurve) {
-        if (buildSpline(newCurve)) return true;
+    Boolean correctSpline(List<Vector3> newCurve, bool lastCurve) {
+        if (buildSpline(newCurve, lastCurve)) return true;
         level = 1;
         List<Vector3> prevCurve = curvePoints[curvePoints.Count - 1];
         raiseLowerCurve(newCurve, prevCurve, level);
-        if (buildSpline(newCurve, prevCurve)) return true;
+        if (buildSpline(newCurve, prevCurve, lastCurve)) return true;
         level = -1;
         raiseLowerCurve(newCurve, prevCurve, level);
-        if (buildSpline(newCurve, prevCurve)) return true;
+        if (buildSpline(newCurve, prevCurve, lastCurve)) return true;
         spline.ClearIntersectionPoints();
         Debug.Log("Questa pista non s'ha da fare");
         return false;
@@ -223,7 +223,7 @@ public class PointsGenerator : MonoBehaviour {
         Vector3 frtPoint;
         if (Vector3.Distance(trdPoint, startPoint) < segmentLen * 4) {
             frtPoint = startPoint;
-            trdPoint = Support.MovePoint(startPoint, -directions[0], segmentLen);
+            trdPoint = Support.MovePoint(startPoint, directions[0]+180, segmentLen);
         }
         else {
             anchor = Support.MovePoint(trdPoint, direction, segmentLen);
@@ -253,15 +253,14 @@ public class PointsGenerator : MonoBehaviour {
     }
 
 
-    Boolean buildSpline(List<Vector3> points) {
-        return spline.AddCurve(points);
+    Boolean buildSpline(List<Vector3> points, bool lastCurve) {
+        return spline.AddCurve(points, lastCurve);
 
     }
-    Boolean buildSpline(List<Vector3> points, List<Vector3> prevPoints) {
+    Boolean buildSpline(List<Vector3> points, List<Vector3> prevPoints, bool lastCurve) {
         spline.DestroyLastCurve();
-        Debug.Log(spline.AddCurve(prevPoints) && spline.AddCurve(points));
 
-        return spline.AddCurve(prevPoints) && spline.AddCurve(points);
+        return spline.AddCurve(prevPoints, false) && spline.AddCurve(points, lastCurve);
 
     }
     //generate a new point toward the given point
