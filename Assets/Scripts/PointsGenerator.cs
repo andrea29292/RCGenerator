@@ -68,6 +68,7 @@ public class PointsGenerator : MonoBehaviour {
         GenTrackDone();
     }
 
+    //select a "random" point, also add the direction
     Vector3 randomPoint(Vector3 prevPoint, float prevDirection) {
         float turn = (float)Math.Pow(random.NextDouble(), 1 / curviness);   //how much the next point will turn?
         if (random.NextDouble() > .5f) turn = -turn;        //turn "left" or "right" randomly
@@ -210,6 +211,7 @@ public class PointsGenerator : MonoBehaviour {
         prevCurve[2] = new Vector3(prevCurve[2].x, RAISE * level, prevCurve[2].z);
         prevCurve[3] = newCurve[0];
     }
+
     //
     List<Vector3> reachFirstPoint(ref Vector3 lastPoint, Vector3 startPoint) {
         List<Vector3> newCurvePoint = new List<Vector3>();
@@ -221,7 +223,7 @@ public class PointsGenerator : MonoBehaviour {
         Vector3 frtPoint;
         if (Vector3.Distance(trdPoint, startPoint) < segmentLen * 4) {
             frtPoint = startPoint;
-            trdPoint = Support.MovePoint(curvePoints[0][0], directions[0], segmentLen);
+            trdPoint = Support.MovePoint(startPoint, -directions[0], segmentLen);
         }
         else {
             anchor = Support.MovePoint(trdPoint, direction, segmentLen);
