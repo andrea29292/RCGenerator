@@ -286,7 +286,9 @@ public class BezierSpline : MonoBehaviour {
 
     public void DestroyLastCurve() {
         Array.Resize(ref points, points.Length - 3);
-
+        Debug.Log("control points before " + intersectionPoints.Count);
+        intersectionPoints.RemoveRange(intersectionPoints.Count - controlRes, controlRes);
+        Debug.Log("control points after " + intersectionPoints.Count);
     }
 
 

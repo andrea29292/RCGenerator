@@ -179,7 +179,7 @@ public class PointsGenerator : MonoBehaviour {
 
 
         CreateDots();
-
+        mesh.CreateMesh();
         spline.curves = new Dictionary<int, List<Vector3>>();   
 
 
@@ -325,6 +325,10 @@ public class PointsGenerator : MonoBehaviour {
     void DestroyTrack() {
         foreach (GameObject pointObject in pointsObject) {
             Destroy(pointObject);
+        }
+        foreach(GameObject sphere in GameObject.FindGameObjectsWithTag("ControlMesh"))
+        {
+            Destroy(sphere);
         }
     }
 
