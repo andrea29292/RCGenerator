@@ -36,13 +36,13 @@ public class Support {
     public static Vector3 MovePoint(Vector3 point, float direction) {
         float varX = (float)Math.Sin(direction * Mathf.Deg2Rad);
         float varZ = (float)Math.Cos(direction * Mathf.Deg2Rad);
-        return new Vector3(point.x + varX, point.y, point.z + varZ);
+        return new Vector3(point.x + varX, 0, point.z + varZ);
     }
 
     public static Vector3 MovePoint(Vector3 point, float direction, float distance) {
         float varX = (float)Math.Sin(direction * Mathf.Deg2Rad) * distance;
         float varZ = (float)Math.Cos(direction * Mathf.Deg2Rad) * distance;
-        return new Vector3(point.x + varX, point.y, point.z + varZ);
+        return new Vector3(point.x + varX, 0, point.z + varZ);
     }
 
     public static void ShowPoint(Vector3 point) {

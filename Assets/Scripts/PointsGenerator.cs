@@ -89,6 +89,7 @@ public class PointsGenerator : MonoBehaviour {
     }
 
     Boolean GenTrackDone() {
+        level = 0;
         spline.Reset();
         spline.firstTime = true;
 
@@ -124,10 +125,12 @@ public class PointsGenerator : MonoBehaviour {
                 secPoint = Support.MovePoint(newCurvePoint[0], direction, segmentLen);  //go "random"
                 directions.Add(direction);
             }
+
             if (level != 0) {
                 secPoint = new Vector3(secPoint.x, RAISE * level, secPoint.z);
                 level = 0;
             }
+
             Vector3 trdpoint = randomPoint(secPoint, direction);
             Vector3 frtPoint = randomPoint(trdpoint, direction);
 
@@ -147,10 +150,12 @@ public class PointsGenerator : MonoBehaviour {
         Vector3 lastPoint = curvePoints[curvePoints.Count - 1][3];
         while (Vector3.Distance(lastPoint, farReturnPoint) > segmentLen * 4) {
             List<Vector3> newCurve = reachPointCurve(ref lastPoint);
+
             if (level != 0) {
                 newCurve[1] = new Vector3(newCurve[1].x, RAISE * level, newCurve[1].z);
                 level = 0;
             }
+
             if (!correctSpline(newCurve, false)) return false;
             curvePoints.Add(newCurve);
             //buildSpline(newCurve);
@@ -162,6 +167,7 @@ public class PointsGenerator : MonoBehaviour {
 
         k = 0;
         while (lastPoint != startPoint) {
+
             List<Vector3> newCurve = reachFirstPoint(ref lastPoint, startPoint);
             if (level != 0) {
                 newCurve[1] = new Vector3(newCurve[1].x, RAISE * level, newCurve[1].z);
@@ -218,8 +224,9 @@ public class PointsGenerator : MonoBehaviour {
     }
 
     void raiseLowerFirstCurve(List<Vector3> firstCurve, int level) {
-        firstCurve[0] = new Vector3(firstCurve[0].x, RAISE * level, firstCurve[0].z);
+        firstCurve[0] = curvePoints[curvePoints.Count-1][3];
         firstCurve[1] = new Vector3(firstCurve[1].x, RAISE * level, firstCurve[1].z);
+        curvePoints[0] = firstCurve;
     }
 
     //
@@ -311,21 +318,26 @@ public class PointsGenerator : MonoBehaviour {
 
     //create GameObject on points position
     void CreateDots() {
-        for (int i = 0; i < curvePoints.Count; i++)
-            for (int j = 0; j < 4; j++)
-                if (i == 0 || (i != 0 && j != 0)) {
-
-                    GameObject pointObject = Instantiate(pointPrefab,
-                    curvePoints[i][j],
-                    Quaternion.identity) as GameObject;
-                    if (i >= fromHereReach) {
-                        pointObject.GetComponent<MeshRenderer>().material.SetColor("_Color", Color.blue);
-                    }
-                    pointsObject.Add(pointObject);
-                    pointObject.transform.parent = transform.GetChild(0).transform;
-                    pointObject.SetActive(pointsAreVisible);
+        for (int i = 0; i < curvePoints.Count; i++) {
+            GameObject bezier = new GameObject();
+            for (int j = 0; j < 4; j++) {
+                GameObject pointObject = Instantiate(pointPrefab,
+                curvePoints[i][j],
+                Quaternion.identity) as GameObject;
+                if (i >= fromHereReach) {
+                    pointObject.GetComponent<MeshRenderer>().material.SetColor("_Color", Color.blue);
                 }
+                pointsObject.Add(pointObject);
+                pointObject.transform.parent = bezier.transform;
+                pointObject.SetActive(pointsAreVisible);
+
+            }
+            bezier.transform.parent = transform.GetChild(0).transform;
+
+        }
     }
+
+
 
 
     public void PointsVisibility() {
@@ -339,10 +351,10 @@ public class PointsGenerator : MonoBehaviour {
 
     void DestroyTrack() {
         foreach (GameObject pointObject in pointsObject) {
-            Destroy(pointObject);        }
+            Destroy(pointObject);
+        }
 
-        foreach(GameObject col in GameObject.FindGameObjectsWithTag("ControlMesh"))
-        {
+        foreach (GameObject col in GameObject.FindGameObjectsWithTag("ControlMesh")) {
             Destroy(col);
 
         }
