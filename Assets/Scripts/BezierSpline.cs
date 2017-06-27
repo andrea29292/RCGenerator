@@ -232,9 +232,11 @@ public class BezierSpline : MonoBehaviour {
     bool CheckIntersect(List<Vector3> newPoints, List<Vector3> oldPoints, bool lastCurve) {
         for (int i = 0; i < newPoints.Count - 2; i++)
             for (int j = 0; j < oldPoints.Count - 3; j++) { //skip the last segment
-                if (lastCurve && j == 0) continue; 
+                if (lastCurve && j == 0) continue;
                 bool intersect = Math3d.AreLineSegmentsCrossing(newPoints[i], newPoints[i + 1], oldPoints[j], oldPoints[j + 1]);
                 if (intersect) {
+                    GameObject cubeObject = Instantiate(colliderPrefab, newPoints[i], Quaternion.identity) as GameObject;
+
                     Debug.Log("new " + i + " stable " + j);
                     return false;
                 }
@@ -264,6 +266,7 @@ public class BezierSpline : MonoBehaviour {
             EnforceMode(0);
         }
     }
+    
     /*
     public void AddPoints(List<Vector3> newPoints)
     {

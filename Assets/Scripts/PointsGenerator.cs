@@ -151,7 +151,7 @@ public class PointsGenerator : MonoBehaviour {
                 newCurve[1] = new Vector3(newCurve[1].x, RAISE * level, newCurve[1].z);
                 level = 0;
             }
-            if (!correctSpline(newCurve,false)) return false;
+            if (!correctSpline(newCurve, false)) return false;
             curvePoints.Add(newCurve);
             //buildSpline(newCurve);
             k++;
@@ -173,7 +173,7 @@ public class PointsGenerator : MonoBehaviour {
             k++;
             if (k >= totalPoints / 2) return false;
         }
-        
+
 
         pointsObject = new List<GameObject>();
 
@@ -181,7 +181,7 @@ public class PointsGenerator : MonoBehaviour {
 
         CreateDots();
         mesh.CreateMesh();
-        spline.curves = new Dictionary<int, List<Vector3>>();   
+        spline.curves = new Dictionary<int, List<Vector3>>();
 
 
 
@@ -190,14 +190,18 @@ public class PointsGenerator : MonoBehaviour {
     }
 
     Boolean correctSpline(List<Vector3> newCurve, bool lastCurve) {
-        if (buildSpline(newCurve, lastCurve)) return true;
+        if (buildSpline(newCurve, lastCurve, curvePoints[0])) return true;
         level = 1;
         List<Vector3> prevCurve = curvePoints[curvePoints.Count - 1];
         raiseLowerCurve(newCurve, prevCurve, level);
-        if (buildSpline(newCurve, prevCurve, lastCurve)) return true;
+        if (lastCurve) raiseLowerFirstCurve(curvePoints[0], level);
+        if (buildSpline(newCurve, prevCurve, lastCurve, curvePoints[0])) return true;
         level = -1;
+
         raiseLowerCurve(newCurve, prevCurve, level);
-        if (buildSpline(newCurve, prevCurve, lastCurve)) return true;
+        if (lastCurve) raiseLowerFirstCurve(curvePoints[0], level);
+
+        if (buildSpline(newCurve, prevCurve, lastCurve, curvePoints[0])) return true;
         spline.ClearIntersectionPoints();
         Debug.Log("Questa pista non s'ha da fare");
         return false;
@@ -210,6 +214,12 @@ public class PointsGenerator : MonoBehaviour {
         //we also need to raise/lower the last two points of the previous curve
         prevCurve[2] = new Vector3(prevCurve[2].x, RAISE * level, prevCurve[2].z);
         prevCurve[3] = newCurve[0];
+
+    }
+
+    void raiseLowerFirstCurve(List<Vector3> firstCurve, int level) {
+        firstCurve[0] = new Vector3(firstCurve[0].x, RAISE * level, firstCurve[0].z);
+        firstCurve[1] = new Vector3(firstCurve[1].x, RAISE * level, firstCurve[1].z);
     }
 
     //
@@ -223,7 +233,7 @@ public class PointsGenerator : MonoBehaviour {
         Vector3 frtPoint;
         if (Vector3.Distance(trdPoint, startPoint) < segmentLen * 4) {
             frtPoint = startPoint;
-            trdPoint = Support.MovePoint(startPoint, directions[0]+180, segmentLen);
+            trdPoint = Support.MovePoint(startPoint, directions[0] + 180, segmentLen);
         }
         else {
             anchor = Support.MovePoint(trdPoint, direction, segmentLen);
@@ -253,12 +263,16 @@ public class PointsGenerator : MonoBehaviour {
     }
 
 
-    Boolean buildSpline(List<Vector3> points, bool lastCurve) {
+    Boolean buildSpline(List<Vector3> points, bool lastCurve, List<Vector3> firstCurve) {
         return spline.AddCurve(points, lastCurve);
 
     }
-    Boolean buildSpline(List<Vector3> points, List<Vector3> prevPoints, bool lastCurve) {
+    Boolean buildSpline(List<Vector3> points, List<Vector3> prevPoints, bool lastCurve, List<Vector3> firstCurve) {
         spline.DestroyLastCurve();
+        //TODO
+        if (lastCurve) {
+            //spline.DestroyFirstCurve(); TODO
+        }
 
         return spline.AddCurve(prevPoints, false) && spline.AddCurve(points, lastCurve);
 
@@ -327,8 +341,7 @@ public class PointsGenerator : MonoBehaviour {
         foreach (GameObject pointObject in pointsObject) {
             Destroy(pointObject);
         }
-        foreach(GameObject sphere in GameObject.FindGameObjectsWithTag("ControlMesh"))
-        {
+        foreach (GameObject sphere in GameObject.FindGameObjectsWithTag("ControlMesh")) {
             Destroy(sphere);
         }
     }
