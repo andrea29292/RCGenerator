@@ -6,7 +6,7 @@ using UnityEngine.UI;
 public class PointsGenerator : MonoBehaviour {
 
     //constant
-    float RAISE = 1.5f;
+    float RAISE = 1.2f;
     int MAX_POINTS = 200;
     float MAX_LENGHT = 100;
     //GameObject Reference
@@ -190,7 +190,7 @@ public class PointsGenerator : MonoBehaviour {
     }
 
     Boolean correctSpline(List<Vector3> newCurve, bool lastCurve) {
-        if (buildSpline(newCurve, lastCurve, curvePoints[0])) return true;
+        if (buildSpline(newCurve, lastCurve, null)) return true;
         level = 1;
         List<Vector3> prevCurve = curvePoints[curvePoints.Count - 1];
         raiseLowerCurve(newCurve, prevCurve, level);
@@ -339,10 +339,12 @@ public class PointsGenerator : MonoBehaviour {
 
     void DestroyTrack() {
         foreach (GameObject pointObject in pointsObject) {
-            Destroy(pointObject);
-        }
-        foreach (GameObject sphere in GameObject.FindGameObjectsWithTag("ControlMesh")) {
-            Destroy(sphere);
+            Destroy(pointObject);        }
+
+        foreach(GameObject col in GameObject.FindGameObjectsWithTag("ControlMesh"))
+        {
+            Destroy(col);
+
         }
     }
 
