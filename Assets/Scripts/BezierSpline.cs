@@ -237,6 +237,13 @@ public class BezierSpline : MonoBehaviour {
 
 
     }
+    public void CorrectFirstCurve(List<Vector3> firstCurve)
+    {
+        for(int i =0; i<4; i++)
+        {
+            points[i] = firstCurve[i];
+        }
+    }
 
     //foreach new point, check if the segments build on i and i+1 intersect with any other old points
     bool CheckIntersect(List<Vector3> newPoints, List<Vector3> oldPoints, bool lastCurve) {
