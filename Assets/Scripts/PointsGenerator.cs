@@ -180,7 +180,7 @@ public class PointsGenerator : MonoBehaviour {
 
 
         CreateDots();
-        mesh.CreateMesh();
+       
         spline.curves = new Dictionary<int, List<Vector3>>();
 
 
@@ -190,18 +190,32 @@ public class PointsGenerator : MonoBehaviour {
     }
 
     Boolean correctSpline(List<Vector3> newCurve, bool lastCurve) {
-        if (buildSpline(newCurve, lastCurve, null)) return true;
+
+        
+        if (buildSpline(newCurve, lastCurve, null))
+        {
+            mesh.CreateMesh();
+            return true;
+        }
         level = 1;
         List<Vector3> prevCurve = curvePoints[curvePoints.Count - 1];
         raiseLowerCurve(newCurve, prevCurve, level);
         if (lastCurve) raiseLowerFirstCurve(curvePoints[0], level);
-        if (buildSpline(newCurve, prevCurve, lastCurve, curvePoints[0])) return true;
+        if (buildSpline(newCurve, prevCurve, lastCurve, curvePoints[0]))
+        {
+            mesh.CreateMesh();
+            return true;
+        }
         level = -1;
 
         raiseLowerCurve(newCurve, prevCurve, level);
         if (lastCurve) raiseLowerFirstCurve(curvePoints[0], level);
 
-        if (buildSpline(newCurve, prevCurve, lastCurve, curvePoints[0])) return true;
+        if (buildSpline(newCurve, prevCurve, lastCurve, curvePoints[0]))
+        {
+            mesh.CreateMesh();
+            return true;
+        }
         spline.ClearIntersectionPoints();
         Debug.Log("Questa pista non s'ha da fare");
         return false;
@@ -264,6 +278,7 @@ public class PointsGenerator : MonoBehaviour {
 
 
     Boolean buildSpline(List<Vector3> points, bool lastCurve, List<Vector3> firstCurve) {
+     
         return spline.AddCurve(points, lastCurve);
 
     }

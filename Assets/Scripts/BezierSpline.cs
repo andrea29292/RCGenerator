@@ -239,10 +239,20 @@ public class BezierSpline : MonoBehaviour {
     }
     public void CorrectFirstCurve(List<Vector3> firstCurve)
     {
-        for(int i =0; i<4; i++)
+        
+        GameObject col = Instantiate(pointPrefab, points[0], Quaternion.identity) as GameObject;
+        GameObject col1 = Instantiate(pointPrefab, points[1], Quaternion.identity) as GameObject;
+        GameObject col2 = Instantiate(pointPrefab, points[2], Quaternion.identity) as GameObject;
+        GameObject col3 = Instantiate(pointPrefab, points[3], Quaternion.identity) as GameObject;
+        for (int i =0; i<4; i++)
         {
             points[i] = firstCurve[i];
         }
+        GameObject col4 = Instantiate(spherePrefab, points[0], Quaternion.identity) as GameObject;
+        GameObject col5 = Instantiate(spherePrefab, points[1], Quaternion.identity) as GameObject;
+        GameObject col6 = Instantiate(spherePrefab, points[2], Quaternion.identity) as GameObject;
+        GameObject col7 = Instantiate(spherePrefab, points[3], Quaternion.identity) as GameObject;
+
     }
 
     //foreach new point, check if the segments build on i and i+1 intersect with any other old points
@@ -263,7 +273,7 @@ public class BezierSpline : MonoBehaviour {
     bool CheckPlaneIntersect(List<Vector3> newPoints, List<Vector3> oldPoints, bool lastCurve)
     {
         List<GameObject> colList = new List<GameObject>();
-        //foreach (Vector3 pt in newPoints)
+
             for (int i = 0; i<newPoints.Count; i++)
         {
             Vector3 dir = pointsAndDirections[newPoints[i]];
@@ -278,12 +288,12 @@ public class BezierSpline : MonoBehaviour {
             Vector3 r3 = verts[7];
 
 
-            //foreach (Vector3 oldPt in oldPoints)
+
             for (int j = 0; j < oldPoints.Count; j++)
             {
                 if(lastCurve && i==newPoints.Count-1 && (j == 0 || j == 1 ))
                 {
-                    continue;
+                    return true;
                 }
                 if(Math3d.IsPointInRectangle(oldPoints[j], r0, r1, r2, r3))
                 {
