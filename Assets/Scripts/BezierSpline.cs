@@ -186,8 +186,6 @@ public class BezierSpline : MonoBehaviour {
     public bool AddCurve(List<Vector3> pointsList, bool lastCurve) {
 
      
-
-
         pointsAndDirections.Clear();
         List<Vector3> newPoints = new List<Vector3>();  //needs to be checked before adding them to intersectionPoints
         for (int i = 0; i < controlRes; i++) {
@@ -196,8 +194,7 @@ public class BezierSpline : MonoBehaviour {
             Vector3 dir = Bezier.GetFirstDerivative(pointsList[0], pointsList[1], pointsList[2], pointsList[3], t);
             newPoints.Add(point);
             pointsAndDirections.Add(point, dir);
-            
-            //GameObject temp = Instantiate(pointPrefab, point, Quaternion.identity) as GameObject;
+
         }
         if (CheckCollisions(newPoints, intersectionPoints, lastCurve)) {
 
@@ -211,11 +208,13 @@ public class BezierSpline : MonoBehaviour {
             }
             else
             {
+                
                 Array.Resize(ref points, points.Length + 3);
-                points[points.Length - 4] = pointsList[0];
+                //points[points.Length - 4] = pointsList[0];
                 points[points.Length - 3] = pointsList[1];
                 points[points.Length - 2] = pointsList[2];
                 points[points.Length - 1] = pointsList[3];
+                
 
             }
 
@@ -233,7 +232,7 @@ public class BezierSpline : MonoBehaviour {
     public bool CheckCollisions(List<Vector3> newPoints, List<Vector3> stablePoints, bool lastCurve) {
 
 
-        return CheckPlaneIntersect(newPoints, stablePoints);
+        return CheckPlaneIntersect(newPoints, stablePoints, lastCurve);
 
 
 
@@ -252,13 +251,14 @@ public class BezierSpline : MonoBehaviour {
             }
         return true;
     }
-    bool CheckPlaneIntersect(List<Vector3> newPoints, List<Vector3> oldPoints)
+    bool CheckPlaneIntersect(List<Vector3> newPoints, List<Vector3> oldPoints, bool lastCurve)
     {
         List<GameObject> colList = new List<GameObject>();
-        foreach (Vector3 pt in newPoints)
+        //foreach (Vector3 pt in newPoints)
+            for (int i = 0; i<newPoints.Count; i++)
         {
-            Vector3 dir = pointsAndDirections[pt];
-            GameObject col = Instantiate(colliderPrefab, new Vector3(pt.x,pt.y+0.01f,pt.z), Quaternion.LookRotation(dir)) as GameObject;
+            Vector3 dir = pointsAndDirections[newPoints[i]];
+            GameObject col = Instantiate(colliderPrefab, new Vector3(newPoints[i].x, newPoints[i].y+0.01f, newPoints[i].z), Quaternion.LookRotation(dir)) as GameObject;
             colList.Add(col);
             Vector3[] verts = GetVertices(col);
             
@@ -267,19 +267,18 @@ public class BezierSpline : MonoBehaviour {
             Vector3 r1 = verts[5];
             Vector3 r2 = verts[6];
             Vector3 r3 = verts[7];
-            
-            /*
-            GameObject temp = Instantiate(pointPrefab, r0, Quaternion.identity) as GameObject;
-            GameObject temp1 = Instantiate(pointPrefab, r1, Quaternion.identity) as GameObject;
-            GameObject temp2 = Instantiate(pointPrefab, r2, Quaternion.identity) as GameObject;
-            GameObject temp3 = Instantiate(pointPrefab, r3, Quaternion.identity) as GameObject;
-            */
-            
-            foreach (Vector3 oldPt in oldPoints)
+
+
+            //foreach (Vector3 oldPt in oldPoints)
+            for (int j = 0; j < oldPoints.Count; j++)
             {
-                if(Math3d.IsPointInRectangle(oldPt, r0, r1, r2, r3))
+                if(lastCurve && i==newPoints.Count-1 && (j == 0 || j == 1 ))
                 {
-                    Debug.Log("Intersezione: " + pt + " con: " + oldPt);
+                    continue;
+                }
+                if(Math3d.IsPointInRectangle(oldPoints[j], r0, r1, r2, r3))
+                {
+                    Debug.Log("Intersezione: " + newPoints[i] + " con: " + oldPoints[j]);
                     foreach(GameObject colObj in colList)
                     {
                         Destroy(col);
@@ -313,26 +312,6 @@ public class BezierSpline : MonoBehaviour {
             EnforceMode(0);
         }
     }
-    /*
-    public void AddPoints(List<Vector3> newPoints)
-    {
-        int curveNum = 0;
-        Array.Resize(ref points, 4);
-        points[0] = newPoints[0];
-        points[1] = newPoints[1];
-        points[2] = newPoints[2];
-        points[3] = newPoints[3];
-        curves.Add(curveNum, new List<Vector3> { points[0], points[1], points[2], points[3] });
-        for (int i = 4; i < newPoints.Count; i+=3)
-        {
-            curveNum += 1;
-            AddCurve(newPoints[i], newPoints[i + 1], newPoints[i + 2]);
-            curves.Add(curveNum, new List<Vector3> { points[i-1], points[i], points[i+1], points[i+2] });
-            //points[i] = newPoints[i];
-        }
-        Debug.Log("Punti: " + points.Length);
-    }
-    */
 
     public void DestroyLastCurve() {
         Array.Resize(ref points, points.Length - 3);
@@ -356,16 +335,11 @@ public class BezierSpline : MonoBehaviour {
         obj1.transform.rotation = Quaternion.identity;
 
         Vector3 extents = obj1.GetComponent<BoxCollider>().bounds.extents;
+
         vertices[0] = thisMatrix.MultiplyPoint3x4(extents);
-        //GameObject pointObject = Instantiate(pointPrefab, vertices[0], Quaternion.identity) as GameObject;
         vertices[1] = thisMatrix.MultiplyPoint3x4(new Vector3(-extents.x, extents.y, extents.z));
-        //GameObject pointObject2 = Instantiate(pointPrefab, vertices[1], Quaternion.identity) as GameObject;
-
         vertices[2] = thisMatrix.MultiplyPoint3x4(new Vector3(extents.x, extents.y, -extents.z));
-        //GameObject pointObject3 = Instantiate(pointPrefab, vertices[2], Quaternion.identity) as GameObject;
-
         vertices[3] = thisMatrix.MultiplyPoint3x4(new Vector3(-extents.x, extents.y, -extents.z));
-        //GameObject pointObject4 = Instantiate(pointPrefab, vertices[3], Quaternion.identity) as GameObject;
         vertices[4] = thisMatrix.MultiplyPoint3x4(new Vector3(extents.x, -extents.y, extents.z));
         vertices[5] = thisMatrix.MultiplyPoint3x4(new Vector3(-extents.x, -extents.y, extents.z));
         vertices[6] = thisMatrix.MultiplyPoint3x4(new Vector3(extents.x, -extents.y, -extents.z));

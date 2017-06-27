@@ -6,7 +6,7 @@ using UnityEngine.UI;
 public class PointsGenerator : MonoBehaviour {
 
     //constant
-    float RAISE = 1.5f;
+    float RAISE = 1.2f;
     int MAX_POINTS = 200;
     float MAX_LENGHT = 100;
     //GameObject Reference
@@ -327,9 +327,9 @@ public class PointsGenerator : MonoBehaviour {
         foreach (GameObject pointObject in pointsObject) {
             Destroy(pointObject);
         }
-        foreach(GameObject sphere in GameObject.FindGameObjectsWithTag("ControlMesh"))
+        foreach(GameObject col in GameObject.FindGameObjectsWithTag("ControlMesh"))
         {
-            Destroy(sphere);
+            Destroy(col);
         }
     }
 
