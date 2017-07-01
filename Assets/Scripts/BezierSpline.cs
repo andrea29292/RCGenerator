@@ -240,14 +240,15 @@ public class BezierSpline : MonoBehaviour {
     public void CorrectFirstCurve(List<Vector3> firstCurve)
     {
         
-        GameObject col = Instantiate(pointPrefab, points[0], Quaternion.identity) as GameObject;
+        /*GameObject col = Instantiate(pointPrefab, points[0], Quaternion.identity) as GameObject;
         GameObject col1 = Instantiate(pointPrefab, points[1], Quaternion.identity) as GameObject;
         GameObject col2 = Instantiate(pointPrefab, points[2], Quaternion.identity) as GameObject;
         GameObject col3 = Instantiate(pointPrefab, points[3], Quaternion.identity) as GameObject;
+        */
         for (int i =0; i<4; i++)
         {
             points[i] = firstCurve[i];
-            GameObject col4 = Instantiate(spherePrefab, points[i], Quaternion.identity) as GameObject;
+            //GameObject col4 = Instantiate(spherePrefab, points[i], Quaternion.identity) as GameObject;
         }
 
 
