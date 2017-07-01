@@ -293,7 +293,7 @@ public class PointsGenerator : MonoBehaviour {
         spline.DestroyLastCurve();
         //TODO
         if (lastCurve) {
-            spline.CorrectFirstCurve(firstCurve);
+           spline.CorrectFirstCurve(firstCurve);
         }
 
         return spline.AddCurve(prevPoints, false) && spline.AddCurve(points, lastCurve);

@@ -247,11 +247,9 @@ public class BezierSpline : MonoBehaviour {
         for (int i =0; i<4; i++)
         {
             points[i] = firstCurve[i];
+            GameObject col4 = Instantiate(spherePrefab, points[i], Quaternion.identity) as GameObject;
         }
-        GameObject col4 = Instantiate(spherePrefab, points[0], Quaternion.identity) as GameObject;
-        GameObject col5 = Instantiate(spherePrefab, points[1], Quaternion.identity) as GameObject;
-        GameObject col6 = Instantiate(spherePrefab, points[2], Quaternion.identity) as GameObject;
-        GameObject col7 = Instantiate(spherePrefab, points[3], Quaternion.identity) as GameObject;
+
 
     }
 
@@ -291,9 +289,9 @@ public class BezierSpline : MonoBehaviour {
 
             for (int j = 0; j < oldPoints.Count; j++)
             {
-                if(lastCurve && i==newPoints.Count-1 && (j == 0 || j == 1 ))
+                if(lastCurve && (i==newPoints.Count-1|| i == newPoints.Count - 2) && (j == 0 || j == 1 ))
                 {
-                    return true;
+                    break;
                 }
                 if(Math3d.IsPointInRectangle(oldPoints[j], r0, r1, r2, r3))
                 {
