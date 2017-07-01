@@ -34,8 +34,9 @@ public class PointsGenerator : MonoBehaviour {
     float maxZ;
     float minZ;
     //structures
-    public List<List<Vector3>> curvePoints;
-    public List<GameObject> pointsObject;   //collections of game objects corrisponding to points
+    public List<List<Vector3>> curvePoints; //control point of our spline
+    public List<GameObject> pointsObjects;   //collections of game objects corrisponding to points
+    public List<GameObject> curveObjects;    //collections of game objects corrisponding to bezier curve
     public GameObject[] curveColliders; //to detect intersections on the track
     public List<float> directions;  //just need it to rotate the collider
     //miscelaneus
@@ -46,6 +47,7 @@ public class PointsGenerator : MonoBehaviour {
     Boolean pointsAreVisible;
     Vector3 farReturnPoint = new Vector3(); //used this to avoid peak on the track
     float _direction;               //see property
+    Boolean _lastCurve;
 
     public BezierSpline spline;
     public ProceduralMesh2 mesh;
@@ -92,6 +94,7 @@ public class PointsGenerator : MonoBehaviour {
         level = 0;
         spline.Reset();
         spline.firstTime = true;
+        _lastCurve = false;
 
         DestroyTrack(); //destroy every point and collider GameObject
         totalPoints = Convert.ToInt32((trackLenght * MAX_POINTS) / MAX_LENGHT) / 3;
@@ -150,7 +153,6 @@ public class PointsGenerator : MonoBehaviour {
         Vector3 lastPoint = curvePoints[curvePoints.Count - 1][3];
         while (Vector3.Distance(lastPoint, farReturnPoint) > segmentLen * 4) {
             List<Vector3> newCurve = reachPointCurve(ref lastPoint);
-
             if (level != 0) {
                 newCurve[1] = new Vector3(newCurve[1].x, RAISE * level, newCurve[1].z);
                 level = 0;
@@ -158,30 +160,29 @@ public class PointsGenerator : MonoBehaviour {
 
             if (!correctSpline(newCurve, false)) return false;
             curvePoints.Add(newCurve);
-            //buildSpline(newCurve);
             k++;
             if (k >= totalPoints / 2) { Debug.Log("EXIT: cannot reach start"); return false; }
         }
+
+
         //now head for the initial point
-
-
         k = 0;
         while (lastPoint != startPoint) {
 
             List<Vector3> newCurve = reachFirstPoint(ref lastPoint, startPoint);
+            
             if (level != 0) {
                 newCurve[1] = new Vector3(newCurve[1].x, RAISE * level, newCurve[1].z);
                 level = 0;
             }
-            if (!correctSpline(newCurve, true)) return false;
+            if (!correctSpline(newCurve, _lastCurve)) return false;
             curvePoints.Add(newCurve);
-            //buildSpline(newCurve);
             k++;
             if (k >= totalPoints / 2) return false;
         }
 
 
-        pointsObject = new List<GameObject>();
+        pointsObjects = new List<GameObject>();
 
 
 
@@ -196,32 +197,19 @@ public class PointsGenerator : MonoBehaviour {
     }
 
     Boolean correctSpline(List<Vector3> newCurve, bool lastCurve) {
+        if (buildSpline(newCurve, lastCurve, null)) return true;
 
-        
-        if (buildSpline(newCurve, lastCurve, null))
-        {
-            mesh.CreateMesh();
-            return true;
-        }
-        level = 1;
         List<Vector3> prevCurve = curvePoints[curvePoints.Count - 1];
+        level = 1;
         raiseLowerCurve(newCurve, prevCurve, level);
         if (lastCurve) raiseLowerFirstCurve(curvePoints[0], level);
-        if (buildSpline(newCurve, prevCurve, lastCurve, curvePoints[0]))
-        {
-            mesh.CreateMesh();
-            return true;
-        }
+        if (buildSpline(newCurve, prevCurve, lastCurve, curvePoints[0])) return true;
+
         level = -1;
-
         raiseLowerCurve(newCurve, prevCurve, level);
         if (lastCurve) raiseLowerFirstCurve(curvePoints[0], level);
+        if (buildSpline(newCurve, prevCurve, lastCurve, curvePoints[0])) return true;
 
-        if (buildSpline(newCurve, prevCurve, lastCurve, curvePoints[0]))
-        {
-            mesh.CreateMesh();
-            return true;
-        }
         spline.ClearIntersectionPoints();
         Debug.Log("Questa pista non s'ha da fare");
         return false;
@@ -229,16 +217,17 @@ public class PointsGenerator : MonoBehaviour {
     }
 
     void raiseLowerCurve(List<Vector3> newCurve, List<Vector3> prevCurve, int level) {
-        for (int i = 0; i < 4; i++)
+        for (int i = 0; i < 4; i++) {
             newCurve[i] = new Vector3(newCurve[i].x, RAISE * level, newCurve[i].z);
+        }
         //we also need to raise/lower the last two points of the previous curve
         prevCurve[2] = new Vector3(prevCurve[2].x, RAISE * level, prevCurve[2].z);
-        prevCurve[3] = newCurve[0];
+        prevCurve[3] = new Vector3(prevCurve[3].x, RAISE * level, prevCurve[3].z);
 
     }
 
     void raiseLowerFirstCurve(List<Vector3> firstCurve, int level) {
-        firstCurve[0] = curvePoints[curvePoints.Count-1][3];
+        firstCurve[0] = new Vector3(firstCurve[0].x, RAISE * level, firstCurve[0].z);
         firstCurve[1] = new Vector3(firstCurve[1].x, RAISE * level, firstCurve[1].z);
         curvePoints[0] = firstCurve;
     }
@@ -253,6 +242,7 @@ public class PointsGenerator : MonoBehaviour {
         Vector3 trdPoint = ReachPoint(anchor, startPoint, secPoint);
         Vector3 frtPoint;
         if (Vector3.Distance(trdPoint, startPoint) < segmentLen * 4) {
+            _lastCurve = true;
             frtPoint = startPoint;
             trdPoint = Support.MovePoint(startPoint, directions[0] + 180, segmentLen);
         }
@@ -342,12 +332,13 @@ public class PointsGenerator : MonoBehaviour {
                 if (i >= fromHereReach) {
                     pointObject.GetComponent<MeshRenderer>().material.SetColor("_Color", Color.blue);
                 }
-                pointsObject.Add(pointObject);
+                pointsObjects.Add(pointObject);
                 pointObject.transform.parent = bezier.transform;
                 pointObject.SetActive(pointsAreVisible);
 
             }
             bezier.transform.parent = transform.GetChild(0).transform;
+            curveObjects.Add(bezier);
 
         }
     }
@@ -358,16 +349,18 @@ public class PointsGenerator : MonoBehaviour {
     public void PointsVisibility() {
         if (pointsAreVisible != visibilityToggle.isOn) {
             pointsAreVisible = visibilityToggle.isOn;
-            foreach (GameObject pointObject in pointsObject) {
+            foreach (GameObject pointObject in pointsObjects) {
                 pointObject.SetActive(pointsAreVisible);
             }
         }
     }
 
     void DestroyTrack() {
-        foreach (GameObject pointObject in pointsObject) {
+        foreach (GameObject pointObject in pointsObjects) {
             Destroy(pointObject);
         }
+
+        foreach (GameObject curveObject in curveObjects) Destroy(curveObject);
 
         foreach (GameObject col in GameObject.FindGameObjectsWithTag("ControlMesh")) {
             Destroy(col);
@@ -391,6 +384,8 @@ public class PointsGenerator : MonoBehaviour {
     }
     // Update is called once per frame
     void Update() {
+        if (curvePoints != null)
+            if (curvePoints[curvePoints.Count - 1] != null) Debug.Log("index : " + (curvePoints.Count - 1) + " position: " + curvePoints[curvePoints.Count - 1][0]);
         curviness = curvinessSlider.value / 100;
         trackLenght = Convert.ToInt32(lenghtSlider.value);
         maxAngleD = angleSlider.value;
