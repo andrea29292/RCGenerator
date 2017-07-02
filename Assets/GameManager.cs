@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class GameManager : MonoBehaviour {
     public GameObject SpaceShipPrefab;
-    public GameObject SpaceShip;
+    GameObject SpaceShip;
     MeshRenderer ShipModel;
     Camera TrackCamera;
     Camera ShipCamera;
