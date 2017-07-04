@@ -56,7 +56,7 @@ public class SpaceShipMovement : MonoBehaviour {
 
             transform.Rotate(Vector3.up, moveHorizontal * 1.2f);
 
-            Debug.Log(shipModel.transform.rotation.eulerAngles);
+            //Debug.Log(shipModel.transform.rotation.eulerAngles);
 
 
 

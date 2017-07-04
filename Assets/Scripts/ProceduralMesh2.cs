@@ -20,7 +20,7 @@ public class ProceduralMesh2 : MonoBehaviour {
             List<Vector3> vertices = new List<Vector3>();
             List<int> triangles = new List<int>();
             List<Vector3> normals = new List<Vector3>();
-
+            
             Vector3 Start = spline.GetPoint(0f);
             Quaternion rotation = Quaternion.LookRotation(spline.GetVelocity(0));
             Vector3 left = rotation * Vector3.left*width;
@@ -60,10 +60,17 @@ public class ProceduralMesh2 : MonoBehaviour {
 
                 Start = End;
             }
+        Vector2[] Uvs = new Vector2[1004];
+        //Set UVs
+        for(int i =0; i<1004; i++)
+        {
 
-            mesh.SetVertices(vertices);
+            Uvs[i] = new Vector2(vertices[i].x, vertices[i].z);
+        }
+        mesh.SetVertices(vertices);
             mesh.SetNormals(normals);
             mesh.SetTriangles(triangles, 0);
+            mesh.uv = Uvs;
             GetComponent<MeshFilter>().mesh = mesh;
             GetComponent<MeshCollider>().sharedMesh = mesh;
         }
