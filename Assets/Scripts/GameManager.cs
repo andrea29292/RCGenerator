@@ -20,15 +20,25 @@ public class GameManager : MonoBehaviour {
     public int lap = 0;
     bool timer;
     public bool firstLap;
-    public GameObject LapCounter;
+    public GameObject LapCounterText;
+    public GameObject BestLapText;
+    public GameObject LapTimeText;
+    public float bestLap = 0f;
 
-	// Use this for initialization
-	void Start () {
+    private float secondsCount;
+    private int minuteCount;
+    private int hourCount;
+
+
+    Text timerText;
+
+    // Use this for initialization
+    void Start () {
         isTrack = false;
         TrackCamera = Camera.main;
         timer = false;
         firstLap = true;
-
+        timerText = LapTimeText.GetComponent<Text>();
     }
 	
     public void RaceMode()
@@ -40,13 +50,16 @@ public class GameManager : MonoBehaviour {
         StartSign = Instantiate(StartSignPrefab, new Vector3(StartPosition.x, StartPosition.y + 0.5f, StartPosition.z), Quaternion.LookRotation(StartRotation));
         ShipCamera = SpaceShip.GetComponentInChildren<Camera>();
         ShipCamera.enabled = true;
-        startTime = 0f;
+        secondsCount= 0f;
         timer = true;
     }
 
     public void EditorMode()
     {
+        timer = false;
         ResetRace();
+        bestLap = 0;
+        BestLapText.GetComponent<Text>().text = "Best Lap: ";
         EditorCanvas.SetActive(true);
         RaceCanvas.SetActive(false);
         Destroy(SpaceShip);
@@ -65,24 +78,39 @@ public class GameManager : MonoBehaviour {
     public void ResetRace()
     {
         SpaceShip.transform.SetPositionAndRotation(new Vector3(StartPosition.x, StartPosition.y + 0.5f, StartPosition.z), Quaternion.LookRotation(StartRotation));
-        startTime = 0f;
+        secondsCount = 0f;
         firstLap = true;
         lap = 0;
-        LapCounter.GetComponent<Text>().text = "Lap: " + lap;
+        LapCounterText.GetComponent<Text>().text = "Lap: " + lap;
     }
 
     public void AddLap()
     {
+        if (secondsCount< bestLap || bestLap == 0)
+        {
+            bestLap = secondsCount;
+            BestLapText.GetComponent<Text>().text = "Best Lap: " + (int)bestLap;
+        }
+        secondsCount = 0f;
         lap += 1;
-        LapCounter.GetComponent<Text>().text = "Lap: "+lap;
+        LapCounterText.GetComponent<Text>().text = "Lap: "+lap;
         Debug.Log("LAP: " + lap);
     }
 
-	// Update is called once per frame
-	void Update () {
+
+    public void UpdateTimerUI()
+    {
+        //set timer UI
+        secondsCount += Time.deltaTime;
+        timerText.text = "Lap: "+  (int)secondsCount;
+ 
+    }
+
+    // Update is called once per frame
+    void FixedUpdate () {
         if (timer)
         {
-            startTime += Time.deltaTime;
+            UpdateTimerUI();
         }
 	}
 }
