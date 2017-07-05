@@ -40,10 +40,12 @@ public class GameManager : MonoBehaviour {
         timer = false;
         firstLap = true;
         timerText = LapTimeText.GetComponent<Text>();
+        bestLap = 0;
     }
 	
     public void RaceMode()
     {
+        bestLap = 0;
         EditorCanvas.SetActive(false);
         RaceCanvas.SetActive(true);
         TrackCamera.enabled = false;
@@ -60,7 +62,7 @@ public class GameManager : MonoBehaviour {
         timer = false;
         ResetRace();
         bestLap = 0;
-        BestLapText.GetComponent<Text>().text = "Best Lap: ";
+        BestLapText.GetComponent<Text>().text = "";
         EditorCanvas.SetActive(true);
         RaceCanvas.SetActive(false);
         Destroy(SpaceShip);
@@ -90,7 +92,7 @@ public class GameManager : MonoBehaviour {
         if (secondsCount< bestLap || bestLap == 0)
         {
             bestLap = secondsCount;
-            BestLapText.GetComponent<Text>().text = "Best Lap: " + bestLap;
+            BestLapText.GetComponent<Text>().text = "" + bestLap;
         }
         secondsCount = 0f;
         lap += 1;
@@ -104,12 +106,12 @@ public class GameManager : MonoBehaviour {
         //set timer UI
         secondsCount += Time.deltaTime;
         secondsCount = Mathf.Round(secondsCount * 100f) / 100f;
-        timerText.text = "Lap: "+  secondsCount;
+        timerText.text = ""+  secondsCount;
  
     }
 
     // Update is called once per frame
-    void Update () {
+    void FixedUpdate () {
         if (timer)
         {
             UpdateTimerUI();

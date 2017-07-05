@@ -63,8 +63,8 @@ public class PointsGenerator : MonoBehaviour {
         curvinessSlider = GameObject.Find("curvinessSlider").GetComponent<Slider>();
         angleSlider = GameObject.Find("angleSlider").GetComponent<Slider>();
         lenghtSlider = GameObject.Find("lenghtSlider").GetComponent<Slider>();
-        visibilityToggle = GameObject.Find("visibilityToggle").GetComponent<Toggle>();
-        pointsAreVisible = visibilityToggle.isOn;
+        //visibilityToggle = GameObject.Find("visibilityToggle").GetComponent<Toggle>();
+        //pointsAreVisible = visibilityToggle.isOn;
     }
     //TODO: try GenTrackDone for x times, than alert the users to try with other params
     void GenTrack() {
@@ -355,7 +355,7 @@ public class PointsGenerator : MonoBehaviour {
 
 
 
-
+    /*
     public void PointsVisibility() {
         if (pointsAreVisible != visibilityToggle.isOn) {
             pointsAreVisible = visibilityToggle.isOn;
@@ -364,6 +364,7 @@ public class PointsGenerator : MonoBehaviour {
             }
         }
     }
+    */
 
     void DestroyTrack() {
         foreach (GameObject pointObject in pointsObjects) {
@@ -399,7 +400,7 @@ public class PointsGenerator : MonoBehaviour {
         curviness = curvinessSlider.value / 100;
         trackLenght = Convert.ToInt32(lenghtSlider.value);
         maxAngleD = angleSlider.value;
-        PointsVisibility();
+        //PointsVisibility();
         Debug.DrawLine(new Vector3(maxX, transform.position.y, minZ), new Vector3(maxX, transform.position.y, maxZ), Color.red, 0.1f);
         Debug.DrawLine(new Vector3(minX, transform.position.y, minZ), new Vector3(minX, transform.position.y, maxZ), Color.red, 0.1f);
         Debug.DrawLine(new Vector3(minX, transform.position.y, minZ), new Vector3(maxX, transform.position.y, minZ), Color.red, 0.1f);

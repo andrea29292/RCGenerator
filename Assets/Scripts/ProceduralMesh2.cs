@@ -60,16 +60,41 @@ public class ProceduralMesh2 : MonoBehaviour {
 
                 Start = End;
             }
+
+
+        //duplicate for twosided meshes
+        int szT = triangles.Count;
+        int szV = vertices.Count;
+        for(int k=0; k<szV; k++)
+        {
+            vertices.Add(vertices[k]);
+            normals.Add(normals[k]);
+        }
+        var newTris = new int[szT * 2]; // double the triangles
+        for (int i = 0; i < szT; i += 3)
+        {
+            // copy the original triangle
+            newTris[i] = triangles[i];
+            newTris[i + 1] = triangles[i + 1];
+            newTris[i + 2] = triangles[i + 2];
+            // save the new reversed triangle
+            int j = i + szT;
+            newTris[j] = triangles[i] + szV;
+            newTris[j + 2] = triangles[i + 1] + szV;
+            newTris[j + 1] = triangles[i + 2] + szV;
+        }
+
         Vector2[] Uvs = new Vector2[vertices.Count];
         //Set UVs
-        for(int i =0; i<vertices.Count; i++)
+        for (int i = 0; i < vertices.Count; i++)
         {
 
             Uvs[i] = new Vector2(vertices[i].x, vertices[i].z);
         }
+
         mesh.SetVertices(vertices);
             mesh.SetNormals(normals);
-            mesh.SetTriangles(triangles, 0);
+            mesh.triangles = newTris;
             mesh.uv = Uvs;
             GetComponent<MeshFilter>().mesh = mesh;
             GetComponent<MeshCollider>().sharedMesh = mesh;
