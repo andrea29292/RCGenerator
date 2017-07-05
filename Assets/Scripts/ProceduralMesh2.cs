@@ -60,9 +60,9 @@ public class ProceduralMesh2 : MonoBehaviour {
 
                 Start = End;
             }
-        Vector2[] Uvs = new Vector2[1004];
+        Vector2[] Uvs = new Vector2[vertices.Count];
         //Set UVs
-        for(int i =0; i<1004; i++)
+        for(int i =0; i<vertices.Count; i++)
         {
 
             Uvs[i] = new Vector2(vertices[i].x, vertices[i].z);

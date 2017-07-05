@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -24,7 +25,7 @@ public class GameManager : MonoBehaviour {
     public GameObject BestLapText;
     public GameObject LapTimeText;
     public float bestLap = 0f;
-
+    
     private float secondsCount;
     private int minuteCount;
     private int hourCount;
@@ -89,7 +90,7 @@ public class GameManager : MonoBehaviour {
         if (secondsCount< bestLap || bestLap == 0)
         {
             bestLap = secondsCount;
-            BestLapText.GetComponent<Text>().text = "Best Lap: " + (int)bestLap;
+            BestLapText.GetComponent<Text>().text = "Best Lap: " + bestLap;
         }
         secondsCount = 0f;
         lap += 1;
@@ -102,12 +103,13 @@ public class GameManager : MonoBehaviour {
     {
         //set timer UI
         secondsCount += Time.deltaTime;
-        timerText.text = "Lap: "+  (int)secondsCount;
+        secondsCount = Mathf.Round(secondsCount * 100f) / 100f;
+        timerText.text = "Lap: "+  secondsCount;
  
     }
 
     // Update is called once per frame
-    void FixedUpdate () {
+    void Update () {
         if (timer)
         {
             UpdateTimerUI();
