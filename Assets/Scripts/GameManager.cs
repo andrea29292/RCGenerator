@@ -24,8 +24,10 @@ public class GameManager : MonoBehaviour {
     public GameObject LapCounterText;
     public GameObject BestLapText;
     public GameObject LapTimeText;
+    public GameObject TrackObject;
     public float bestLap = 0f;
-    
+    public AudioSource EditorMusic;
+    public AudioSource RaceMusic;
     private float secondsCount;
     private int minuteCount;
     private int hourCount;
@@ -35,6 +37,7 @@ public class GameManager : MonoBehaviour {
 
     // Use this for initialization
     void Start () {
+        EditorMusic.Play();
         isTrack = false;
         TrackCamera = Camera.main;
         timer = false;
@@ -45,20 +48,28 @@ public class GameManager : MonoBehaviour {
 	
     public void RaceMode()
     {
+        EditorMusic.Stop();
+        TrackObject.transform.SetPositionAndRotation(TrackObject.transform.position, Quaternion.identity);
         bestLap = 0;
         EditorCanvas.SetActive(false);
         RaceCanvas.SetActive(true);
-        TrackCamera.enabled = false;
+        TrackCamera.gameObject.SetActive(false);
         SpaceShip = Instantiate(SpaceShipPrefab, new Vector3(StartPosition.x, StartPosition.y+0.5f, StartPosition.z), Quaternion.LookRotation(StartRotation));
         StartSign = Instantiate(StartSignPrefab, new Vector3(StartPosition.x, StartPosition.y + 0.5f, StartPosition.z), Quaternion.LookRotation(StartRotation));
         ShipCamera = SpaceShip.GetComponentInChildren<Camera>();
         ShipCamera.enabled = true;
         secondsCount= 0f;
         timer = true;
+        RaceMusic.Play();
     }
 
     public void EditorMode()
     {
+        if (RaceMusic.isPlaying)
+        {
+            RaceMusic.Stop();
+        }
+        EditorMusic.Play();
         timer = false;
         ResetRace();
         bestLap = 0;
@@ -67,7 +78,7 @@ public class GameManager : MonoBehaviour {
         RaceCanvas.SetActive(false);
         Destroy(SpaceShip);
         Destroy(StartSign);
-        TrackCamera.enabled = true;
+        TrackCamera.gameObject.SetActive(true);
     }
 
 
