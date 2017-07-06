@@ -68,8 +68,24 @@ public class PointsGenerator : MonoBehaviour {
     }
     //TODO: try GenTrackDone for x times, than alert the users to try with other params
     void GenTrack() {
-        //while (!GenTrackDone()) ;
-        GenTrackDone();
+        Camera.main.GetComponent<TrackCameraManager>().ResetCamera(trackLenght);
+        int attempt = 0;
+        bool res = false;
+        while (true) {
+            attempt++;
+            if (attempt >= 10 & res == false) {
+
+                Debug.Log("Sorry, try again or change params.");
+                break;
+            };
+            res = GenTrackDone();
+            if (res) break;
+        }
+        /*if (res) {
+            for(int 
+        }*/
+        attempt = 0;
+
     }
 
     //select a "random" point, also add the direction
@@ -172,7 +188,7 @@ public class PointsGenerator : MonoBehaviour {
         while (lastPoint != startPoint) {
 
             List<Vector3> newCurve = reachFirstPoint(ref lastPoint, startPoint);
-            
+
             if (level != 0) {
                 newCurve[1] = new Vector3(newCurve[1].x, RAISE * level, newCurve[1].z);
                 level = 0;
@@ -193,8 +209,7 @@ public class PointsGenerator : MonoBehaviour {
         spline.curves = new Dictionary<int, List<Vector3>>();
 
 
-        foreach(GameObject obj in GameObject.FindGameObjectsWithTag("ControlMesh"))
-        {
+        foreach (GameObject obj in GameObject.FindGameObjectsWithTag("ControlMesh")) {
             Destroy(obj);
         }
         List<Vector3> firstCurve = curvePoints[0];
@@ -285,7 +300,7 @@ public class PointsGenerator : MonoBehaviour {
 
 
     Boolean buildSpline(List<Vector3> points, bool lastCurve, List<Vector3> firstCurve) {
-     
+
         return spline.AddCurve(points, lastCurve);
 
     }
@@ -293,7 +308,7 @@ public class PointsGenerator : MonoBehaviour {
         spline.DestroyLastCurve();
         //TODO
         if (lastCurve) {
-           spline.CorrectFirstCurve(firstCurve);
+            spline.CorrectFirstCurve(firstCurve);
         }
 
         return spline.AddCurve(prevPoints, false) && spline.AddCurve(points, lastCurve);
