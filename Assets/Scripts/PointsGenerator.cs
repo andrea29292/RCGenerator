@@ -68,7 +68,8 @@ public class PointsGenerator : MonoBehaviour {
     }
     //TODO: try GenTrackDone for x times, than alert the users to try with other params
     void GenTrack() {
-        Camera.main.GetComponent<TrackCameraManager>().ResetCamera(trackLenght);
+        transform.position = new Vector3(0, 0, 0);
+        transform.rotation = Quaternion.identity;
         int attempt = 0;
         bool res = false;
         while (true) {
@@ -81,9 +82,31 @@ public class PointsGenerator : MonoBehaviour {
             res = GenTrackDone();
             if (res) break;
         }
-        /*if (res) {
-            for(int 
-        }*/
+        if (res) {
+            float maxX = Mathf.NegativeInfinity;
+            float minX = Mathf.Infinity;
+            float maxZ = Mathf.NegativeInfinity;
+            float minZ = Mathf.Infinity;
+            for (int i = 0; i < curvePoints.Count; i++)
+                for (int j = 0; j < 3; j++) {
+                    Vector3 current = curvePoints[i][j];
+                    if (current.x > maxX) maxX = current.x;
+                    if (current.x < minX) minX = current.x;
+                    if (current.z > maxZ) maxZ = current.z;
+                    if (current.z < minZ) minZ = current.z;
+                }
+            Vector3 newCenter = new Vector3((maxX + minX) / 2, 0, (maxZ + minZ) / 2);
+            Debug.DrawLine(new Vector3(maxX, 0, maxZ), new Vector3(minX, 0, maxZ), Color.cyan,20);
+            Debug.DrawLine(new Vector3(maxX, 0, minZ), new Vector3(minX, 0, minZ), Color.cyan, 20);
+            Debug.DrawLine(new Vector3(maxX, 0, minZ), new Vector3(maxX, 0, maxZ), Color.cyan, 20);
+            Debug.DrawLine(new Vector3(minX, 0, minZ), new Vector3(minX, 0, maxZ), Color.cyan, 20);
+
+            GameObject pointObject = Instantiate(pointPrefab,
+                newCenter,
+                Quaternion.identity) as GameObject;
+            Camera.main.GetComponent<TrackCameraManager>().ResetCamera(trackLenght, newCenter);
+            
+        }
         attempt = 0;
 
     }
