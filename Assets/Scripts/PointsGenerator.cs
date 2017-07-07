@@ -6,7 +6,7 @@ using UnityEngine.UI;
 public class PointsGenerator : MonoBehaviour {
 
     //constant
-    float RAISE = 1.2f;
+    float RAISE = 0.9f;
     int MAX_POINTS = 200;
     float MAX_LENGHT = 100;
     //GameObject Reference
@@ -231,14 +231,16 @@ public class PointsGenerator : MonoBehaviour {
         mesh.CreateMesh();
         spline.curves = new Dictionary<int, List<Vector3>>();
 
-
+        
         foreach (GameObject obj in GameObject.FindGameObjectsWithTag("ControlMesh")) {
             Destroy(obj);
         }
         List<Vector3> firstCurve = curvePoints[0];
         Vector3 pos = Bezier.GetPoint(firstCurve[0], firstCurve[1], firstCurve[2], firstCurve[3], 0);
-        Vector3 rot = Bezier.GetFirstDerivative(firstCurve[0], firstCurve[1], firstCurve[2], firstCurve[3], 0);
-        GameManager.GetComponent<GameManager>().SetStartPoint(pos, rot);
+        Vector3 rot1 = Bezier.GetFirstDerivative(firstCurve[0], firstCurve[1], firstCurve[2], firstCurve[3], 0);
+        Vector3 rot2 = Bezier.GetFirstDerivative(firstCurve[0], firstCurve[1], firstCurve[2], firstCurve[3], 0.5f);
+        
+        GameManager.GetComponent<GameManager>().SetStartPoint(pos, rot1);
         GameManager.GetComponent<GameManager>().isTrack = true;
         return true;
     }

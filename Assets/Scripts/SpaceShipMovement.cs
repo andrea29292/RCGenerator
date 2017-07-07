@@ -54,7 +54,7 @@ public class SpaceShipMovement : MonoBehaviour {
             speed = 1f;
         }
 
-            transform.Rotate(Vector3.up, moveHorizontal * 1.2f);
+            transform.Rotate(Vector3.up, moveHorizontal *60f*Time.deltaTime);
 
             //Debug.Log(shipModel.transform.rotation.eulerAngles);
 
@@ -62,7 +62,7 @@ public class SpaceShipMovement : MonoBehaviour {
 
 
         
-        transform.Translate(Vector3.forward*(speed*0.1f));
+        transform.Translate(Vector3.forward*(speed*6f*Time.deltaTime));
     }
 }
 
