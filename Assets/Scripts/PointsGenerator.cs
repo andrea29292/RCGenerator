@@ -6,7 +6,7 @@ using UnityEngine.UI;
 public class PointsGenerator : MonoBehaviour {
 
     //constant
-    float RAISE = 0.8f;
+    float RAISE = 0.9f;
     int MAX_POINTS = 200;
     float MAX_LENGHT = 100;
     //GameObject Reference

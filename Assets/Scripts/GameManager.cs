@@ -28,6 +28,9 @@ public class GameManager : MonoBehaviour {
     public float bestLap = 0f;
     public AudioSource EditorMusic;
     public AudioSource RaceMusic;
+    public AudioSource BestLapSound;
+    public AudioSource LapSound;
+    public AudioSource TryAgainSound;
     private float secondsCount;
     private int minuteCount;
     private int hourCount;
@@ -91,6 +94,7 @@ public class GameManager : MonoBehaviour {
 
     public void ResetRace()
     {
+        TryAgainSound.Play();
         SpaceShip.transform.SetPositionAndRotation(new Vector3(StartPosition.x, StartPosition.y + 0.5f, StartPosition.z), Quaternion.LookRotation(StartRotation));
         secondsCount = 0f;
         firstLap = true;
@@ -104,7 +108,11 @@ public class GameManager : MonoBehaviour {
         {
             bestLap = secondsCount;
             BestLapText.GetComponent<Text>().text = "" + bestLap;
+            BestLapSound.Play();
         }
+     
+            LapSound.Play();
+        
         secondsCount = 0f;
         lap += 1;
         LapCounterText.GetComponent<Text>().text = "Lap: "+lap;
