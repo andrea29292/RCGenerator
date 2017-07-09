@@ -31,6 +31,7 @@ public class GameManager : MonoBehaviour {
     public AudioSource BestLapSound;
     public AudioSource LapSound;
     public AudioSource TryAgainSound;
+
     private float secondsCount;
     private int minuteCount;
     private int hourCount;
@@ -52,7 +53,7 @@ public class GameManager : MonoBehaviour {
     public void RaceMode()
     {
         EditorMusic.Stop();
-        TrackObject.transform.SetPositionAndRotation(TrackObject.transform.position, Quaternion.identity);
+        TrackObject.transform.SetPositionAndRotation(Vector3.zero, Quaternion.identity);
         bestLap = 0;
         EditorCanvas.SetActive(false);
         RaceCanvas.SetActive(true);

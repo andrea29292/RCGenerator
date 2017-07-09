@@ -5,7 +5,7 @@ using UnityEngine;
 public class ProceduralMesh2 : MonoBehaviour {
     public BezierSpline spline;
     public int size = 10;
-    public int width = 1;
+    public float width = 1;
     // Use this for initialization
     void Start () {
         

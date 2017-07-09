@@ -47,7 +47,7 @@ public class TrackCameraManager : MonoBehaviour {
         }
 
         if (rotate)
-            //track.transform.RotateAround(currentCenter, Vector3.up, 10 * Time.deltaTime);
+            track.transform.RotateAround(currentCenter, Vector3.up, 10 * Time.deltaTime);
 
             if (!rotate) {
                 time += Time.deltaTime;

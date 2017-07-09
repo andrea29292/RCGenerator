@@ -25,7 +25,7 @@ public class PointsGenerator : MonoBehaviour {
     public float segmentLen = 0.2f;
     public float trackWidth = 0.1f;     //Width of the colliders
     public float fieldDimension = 0.2f; //how big is the field considering the totalpoints
-    float farPointDistance = 20f;      //how far is the far point to reach considering the max angle
+    float farPointDistance = 15f;      //how far is the far point to reach considering the max angle
     //derivated params, make private then
     public int totalPoints;
     //define the boundaries of the track
@@ -51,6 +51,7 @@ public class PointsGenerator : MonoBehaviour {
 
     public BezierSpline spline;
     public ProceduralMesh2 mesh;
+    public GameObject meshObject;
 
     GameObject GameManager;
 
@@ -101,9 +102,9 @@ public class PointsGenerator : MonoBehaviour {
             Debug.DrawLine(new Vector3(maxX, 0, minZ), new Vector3(maxX, 0, maxZ), Color.cyan, 20);
             Debug.DrawLine(new Vector3(minX, 0, minZ), new Vector3(minX, 0, maxZ), Color.cyan, 20);
 
-            GameObject pointObject = Instantiate(pointPrefab,
-                newCenter,
-                Quaternion.identity) as GameObject;
+            //GameObject pointObject = Instantiate(pointPrefab,
+              //  newCenter,
+                //Quaternion.identity) as GameObject;
             Camera.main.GetComponent<TrackCameraManager>().ResetCamera(trackLenght, newCenter);
             
         }
@@ -132,6 +133,10 @@ public class PointsGenerator : MonoBehaviour {
     }
 
     Boolean GenTrackDone() {
+        if (!meshObject.activeSelf)
+        {
+            meshObject.SetActive(true);
+        }
         level = 0;
         spline.Reset();
         spline.firstTime = true;
@@ -157,9 +162,9 @@ public class PointsGenerator : MonoBehaviour {
         float howFar = farPointDistance + farPointDistance * (1 - maxAngleD / 45);
         Debug.Log("how far: " + howFar+" far point distance: "+farPointDistance);
         farReturnPoint = Support.MovePoint(startPoint, (float)(direction - 180), howFar);
-        GameObject pointObject = Instantiate(pointPrefab,
-                farReturnPoint,
-                Quaternion.identity) as GameObject;
+        //GameObject pointObject = Instantiate(pointPrefab,
+          //      farReturnPoint,
+            //    Quaternion.identity) as GameObject;
 
         for (int i = 0; i < totalPoints / 3; i++) { //foreach curve
             List<Vector3> newCurvePoint = new List<Vector3>();
@@ -231,7 +236,7 @@ public class PointsGenerator : MonoBehaviour {
 
 
 
-        CreateDots();
+        //CreateDots();
         mesh.CreateMesh();
         spline.curves = new Dictionary<int, List<Vector3>>();
 
