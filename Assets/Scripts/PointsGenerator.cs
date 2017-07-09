@@ -24,8 +24,8 @@ public class PointsGenerator : MonoBehaviour {
     //not to be decided by the user
     public float segmentLen = 0.2f;
     public float trackWidth = 0.1f;     //Width of the colliders
-    public float fieldDimension = 0.1f; //how big is the field considering the totalpoints
-    public float farPointDistance;      //how far is the far point to reach considering the max angle
+    public float fieldDimension = 0.2f; //how big is the field considering the totalpoints
+    float farPointDistance = 20f;      //how far is the far point to reach considering the max angle
     //derivated params, make private then
     public int totalPoints;
     //define the boundaries of the track
@@ -59,7 +59,7 @@ public class PointsGenerator : MonoBehaviour {
     // Use this for initialization
     void Start() {
         GameManager = GameObject.FindGameObjectWithTag("GameManager");
-        farPointDistance = 10 * segmentLen;
+        farPointDistance = farPointDistance * segmentLen;
         curvinessSlider = GameObject.Find("curvinessSlider").GetComponent<Slider>();
         angleSlider = GameObject.Find("angleSlider").GetComponent<Slider>();
         lenghtSlider = GameObject.Find("lenghtSlider").GetComponent<Slider>();
@@ -154,8 +154,12 @@ public class PointsGenerator : MonoBehaviour {
 
         direction = (float)(random.NextDouble() * 360);   //start from a random direction
         Vector3 startPoint = new Vector3(transform.position.x, transform.position.y, transform.position.z);  //but on a center point
-        float howFar = 3 + farPointDistance * (1 - maxAngleD / 45);
+        float howFar = farPointDistance + farPointDistance * (1 - maxAngleD / 45);
+        Debug.Log("how far: " + howFar+" far point distance: "+farPointDistance);
         farReturnPoint = Support.MovePoint(startPoint, (float)(direction - 180), howFar);
+        GameObject pointObject = Instantiate(pointPrefab,
+                farReturnPoint,
+                Quaternion.identity) as GameObject;
 
         for (int i = 0; i < totalPoints / 3; i++) { //foreach curve
             List<Vector3> newCurvePoint = new List<Vector3>();

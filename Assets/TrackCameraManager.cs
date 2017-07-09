@@ -33,15 +33,17 @@ public class TrackCameraManager : MonoBehaviour {
             rotate = false;
             time = 0;
         }
-        else if (Input.GetKey(KeyCode.W)) {
+        else if (Input.GetKey(KeyCode.W) & Vector3.Distance(transform.position, currentCenter) > 40f) {
             float step = zoomSpeed * Time.deltaTime;
-            if (Vector3.Distance(track.transform.position, transform.position) > 40f)
-                track.transform.position = Vector3.MoveTowards(track.transform.position, transform.position, step);
+            Vector3 toward = Vector3.MoveTowards(currentCenter, transform.position, step);
+            track.transform.position = new Vector3(track.transform.position.x, toward.y, toward.z);
+            currentCenter = toward;
         }
-        else if (Input.GetKey(KeyCode.S)) {
+        else if (Input.GetKey(KeyCode.S) & Vector3.Distance(transform.position, currentCenter) < 70f) {
             float step = zoomSpeed * Time.deltaTime;
-            if (Vector3.Distance(track.transform.position, transform.position) <70f)
-                track.transform.position = Vector3.MoveTowards(track.transform.position, transform.position, -step);
+            Vector3 toward = Vector3.MoveTowards(currentCenter, transform.position, -step);
+            track.transform.position = new Vector3(track.transform.position.x, toward.y, toward.z);
+            currentCenter = toward;
         }
 
         if (rotate)
