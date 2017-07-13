@@ -31,7 +31,7 @@ public class GameManager : MonoBehaviour {
     public AudioSource BestLapSound;
     public AudioSource LapSound;
     public AudioSource TryAgainSound;
-
+    public GameObject RaceButton;
     private float secondsCount;
     private int minuteCount;
     private int hourCount;
@@ -48,6 +48,7 @@ public class GameManager : MonoBehaviour {
         firstLap = true;
         timerText = LapTimeText.GetComponent<Text>();
         bestLap = 0;
+        RaceButton.GetComponent<Button>().interactable = false; ;
     }
 	
     public void RaceMode()
@@ -118,6 +119,10 @@ public class GameManager : MonoBehaviour {
         lap += 1;
         LapCounterText.GetComponent<Text>().text = "Lap: "+lap;
         Debug.Log("LAP: " + lap);
+    }
+    public void EnableRace()
+    {
+        RaceButton.GetComponent<Button>().interactable = true;
     }
 
 

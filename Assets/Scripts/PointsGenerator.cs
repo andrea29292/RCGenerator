@@ -52,6 +52,7 @@ public class PointsGenerator : MonoBehaviour {
     public BezierSpline spline;
     public ProceduralMesh2 mesh;
     public GameObject meshObject;
+    
 
     GameObject GameManager;
 
@@ -251,6 +252,7 @@ public class PointsGenerator : MonoBehaviour {
         
         GameManager.GetComponent<GameManager>().SetStartPoint(pos, rot1);
         GameManager.GetComponent<GameManager>().isTrack = true;
+        GameManager.GetComponent<GameManager>().EnableRace();
         return true;
     }
 
