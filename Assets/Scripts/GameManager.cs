@@ -17,7 +17,7 @@ public class GameManager : MonoBehaviour {
     public bool isTrack;
     public GameObject EditorCanvas;
     public GameObject RaceCanvas;
-     public float startTime;
+    public float startTime;
     public int lap = 0;
     bool timer;
     public bool firstLap;
@@ -26,6 +26,11 @@ public class GameManager : MonoBehaviour {
     public GameObject LapTimeText;
     public GameObject TrackObject;
     public float bestLap = 0f;
+    public bool isPlayer1Racing;
+    public bool isMultiplayer;
+
+    public float Player1BestLap;
+    public float Player2BestLap;
     public AudioSource EditorMusic;
     public AudioSource RaceMusic;
     public AudioSource BestLapSound;
@@ -40,7 +45,7 @@ public class GameManager : MonoBehaviour {
     Text timerText;
 
     // Use this for initialization
-    void Start () {
+    void Start() {
         EditorMusic.Play();
         isTrack = false;
         TrackCamera = Camera.main;
@@ -50,22 +55,53 @@ public class GameManager : MonoBehaviour {
         bestLap = 0;
         RaceButton.GetComponent<Button>().interactable = false; ;
     }
-	
-    public void RaceMode()
+
+    public void SinglePlayerRaceMode()
     {
         EditorMusic.Stop();
         TrackObject.transform.SetPositionAndRotation(Vector3.zero, Quaternion.identity);
-        bestLap = 0;
+        //bestLap = 0;
+        BestLapText.GetComponent<Text>().text = "" + bestLap;
         EditorCanvas.SetActive(false);
         RaceCanvas.SetActive(true);
         TrackCamera.gameObject.SetActive(false);
-        SpaceShip = Instantiate(SpaceShipPrefab, new Vector3(StartPosition.x, StartPosition.y+0.5f, StartPosition.z), Quaternion.LookRotation(StartRotation));
+        SpaceShip = Instantiate(SpaceShipPrefab, new Vector3(StartPosition.x, StartPosition.y + 0.5f, StartPosition.z), Quaternion.LookRotation(StartRotation));
         StartSign = Instantiate(StartSignPrefab, new Vector3(StartPosition.x, StartPosition.y + 0.5f, StartPosition.z), Quaternion.LookRotation(StartRotation));
         ShipCamera = SpaceShip.GetComponentInChildren<Camera>();
         ShipCamera.enabled = true;
-        secondsCount= 0f;
+        secondsCount = 0f;
         timer = true;
         RaceMusic.Play();
+    }
+
+    public void MultiplayerRaceMode()
+    {
+        isPlayer1Racing = true;
+        isMultiplayer = true;
+        EditorMusic.Stop();
+        TrackObject.transform.SetPositionAndRotation(Vector3.zero, Quaternion.identity);
+
+        BestLapText.GetComponent<Text>().text = "" + bestLap;
+        EditorCanvas.SetActive(false);
+        RaceCanvas.SetActive(true);
+        TrackCamera.gameObject.SetActive(false);
+        SpaceShip = Instantiate(SpaceShipPrefab, new Vector3(StartPosition.x, StartPosition.y + 0.5f, StartPosition.z), Quaternion.LookRotation(StartRotation));
+        StartSign = Instantiate(StartSignPrefab, new Vector3(StartPosition.x, StartPosition.y + 0.5f, StartPosition.z), Quaternion.LookRotation(StartRotation));
+        ShipCamera = SpaceShip.GetComponentInChildren<Camera>();
+        ShipCamera.enabled = true;
+        secondsCount = 0f;
+        timer = true;
+        RaceMusic.Play();
+    }
+
+    public void ChangePlayer()
+    {
+
+    }
+
+    public void RaceResults()
+    {
+
     }
 
     public void EditorMode()
@@ -77,7 +113,7 @@ public class GameManager : MonoBehaviour {
         EditorMusic.Play();
         timer = false;
         ResetRace();
-        bestLap = 0;
+        //bestLap = 0;
         BestLapText.GetComponent<Text>().text = "";
         EditorCanvas.SetActive(true);
         RaceCanvas.SetActive(false);
@@ -117,6 +153,21 @@ public class GameManager : MonoBehaviour {
         
         secondsCount = 0f;
         lap += 1;
+        if(isMultiplayer && lap == 3)
+        {
+            if (isPlayer1Racing)
+            {
+                Player1BestLap = bestLap;
+                ChangePlayer();
+                
+            }
+            else
+            {
+                Player2BestLap = bestLap;
+                RaceResults();
+            }
+            
+        }
         LapCounterText.GetComponent<Text>().text = "Lap: "+lap;
         Debug.Log("LAP: " + lap);
     }

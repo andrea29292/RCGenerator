@@ -70,6 +70,7 @@ public class PointsGenerator : MonoBehaviour {
     }
     //TODO: try GenTrackDone for x times, than alert the users to try with other params
     void GenTrack() {
+        GameManager.GetComponent<GameManager>().bestLap = 0f;
         transform.position = new Vector3(0, 0, 0);
         transform.rotation = Quaternion.identity;
         int attempt = 0;
