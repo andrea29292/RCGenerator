@@ -5,7 +5,8 @@ using UnityEngine;
 public class SpaceShipMovement : MonoBehaviour {
 
    float speed = 0f;
-    public GameObject shipModel;
+    public GameObject ShipModelBlue;
+    public GameObject ShipModelRed;
     Quaternion originalRotation;
     GameManager GameManager;
     public GameObject particleLeft;
@@ -16,7 +17,7 @@ public class SpaceShipMovement : MonoBehaviour {
 
         GameManager = GameObject.FindGameObjectWithTag("GameManager").GetComponent<GameManager>();
         rb = GetComponent<Rigidbody>();
-        originalRotation = shipModel.transform.rotation;
+        originalRotation = ShipModelBlue.transform.rotation;
         //particles.SetActive(false);
     }
 
@@ -24,7 +25,7 @@ public class SpaceShipMovement : MonoBehaviour {
     {
         if (transform.position.y < -5f)
         {
-            GameManager.ResetRace();
+            GameManager.ResetRace(true);
         }
         if (Input.GetButton("Accelerate"))
         {
@@ -63,6 +64,17 @@ public class SpaceShipMovement : MonoBehaviour {
 
         
         transform.Translate(Vector3.forward*(speed*6f*Time.deltaTime));
+    }
+
+    public void SetBlueModel()
+    {
+        ShipModelBlue.SetActive(true);
+        ShipModelRed.SetActive(false);
+    }
+    public void SetRedModel()
+    {
+        ShipModelBlue.SetActive(false);
+        ShipModelRed.SetActive(true);
     }
 }
 

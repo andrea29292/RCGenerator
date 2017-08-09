@@ -18,7 +18,7 @@ public class GameManager : MonoBehaviour {
     public GameObject EditorCanvas;
     public GameObject RaceCanvas;
     public float startTime;
-    public int lap = 0;
+    public int lap = 1;
     bool timer;
     public bool firstLap;
     public GameObject LapCounterText;
@@ -36,7 +36,9 @@ public class GameManager : MonoBehaviour {
     public AudioSource BestLapSound;
     public AudioSource LapSound;
     public AudioSource TryAgainSound;
-    public GameObject RaceButton;
+    public GameObject SinglePlayerRaceButton;
+    public GameObject MultiPlayerRaceButton;
+    public GameObject Player2ReadyButton;
     private float secondsCount;
     private int minuteCount;
     private int hourCount;
@@ -53,7 +55,9 @@ public class GameManager : MonoBehaviour {
         firstLap = true;
         timerText = LapTimeText.GetComponent<Text>();
         bestLap = 0;
-        RaceButton.GetComponent<Button>().interactable = false; ;
+        SinglePlayerRaceButton.GetComponent<Button>().interactable = false;
+        MultiPlayerRaceButton.GetComponent<Button>().interactable = false;
+        Player2ReadyButton.SetActive(false);
     }
 
     public void SinglePlayerRaceMode()
@@ -66,6 +70,7 @@ public class GameManager : MonoBehaviour {
         RaceCanvas.SetActive(true);
         TrackCamera.gameObject.SetActive(false);
         SpaceShip = Instantiate(SpaceShipPrefab, new Vector3(StartPosition.x, StartPosition.y + 0.5f, StartPosition.z), Quaternion.LookRotation(StartRotation));
+        SpaceShip.GetComponent<SpaceShipMovement>().SetBlueModel();
         StartSign = Instantiate(StartSignPrefab, new Vector3(StartPosition.x, StartPosition.y + 0.5f, StartPosition.z), Quaternion.LookRotation(StartRotation));
         ShipCamera = SpaceShip.GetComponentInChildren<Camera>();
         ShipCamera.enabled = true;
@@ -80,12 +85,13 @@ public class GameManager : MonoBehaviour {
         isMultiplayer = true;
         EditorMusic.Stop();
         TrackObject.transform.SetPositionAndRotation(Vector3.zero, Quaternion.identity);
-
+        bestLap = 0f;
         BestLapText.GetComponent<Text>().text = "" + bestLap;
         EditorCanvas.SetActive(false);
         RaceCanvas.SetActive(true);
         TrackCamera.gameObject.SetActive(false);
         SpaceShip = Instantiate(SpaceShipPrefab, new Vector3(StartPosition.x, StartPosition.y + 0.5f, StartPosition.z), Quaternion.LookRotation(StartRotation));
+        SpaceShip.GetComponent<SpaceShipMovement>().SetBlueModel();
         StartSign = Instantiate(StartSignPrefab, new Vector3(StartPosition.x, StartPosition.y + 0.5f, StartPosition.z), Quaternion.LookRotation(StartRotation));
         ShipCamera = SpaceShip.GetComponentInChildren<Camera>();
         ShipCamera.enabled = true;
@@ -96,7 +102,16 @@ public class GameManager : MonoBehaviour {
 
     public void ChangePlayer()
     {
-
+        Player2ReadyButton.SetActive(true);
+        Time.timeScale = 0f;
+        bestLap = 0f;
+        BestLapText.GetComponent<Text>().text = ""+bestLap;
+        SpaceShip.GetComponent<SpaceShipMovement>().SetRedModel();
+        isPlayer1Racing = false;
+        timer = false;
+        ResetRace(false);
+        firstLap = false;
+        
     }
 
     public void RaceResults()
@@ -112,8 +127,9 @@ public class GameManager : MonoBehaviour {
         }
         EditorMusic.Play();
         timer = false;
-        ResetRace();
+        ResetRace(false);
         //bestLap = 0;
+       
         BestLapText.GetComponent<Text>().text = "";
         EditorCanvas.SetActive(true);
         RaceCanvas.SetActive(false);
@@ -130,14 +146,23 @@ public class GameManager : MonoBehaviour {
         StartRotation = rotation;
     }
 
-    public void ResetRace()
+    public void ResetRace(bool falling)
     {
-        TryAgainSound.Play();
-        SpaceShip.transform.SetPositionAndRotation(new Vector3(StartPosition.x, StartPosition.y + 0.5f, StartPosition.z), Quaternion.LookRotation(StartRotation));
-        secondsCount = 0f;
-        firstLap = true;
-        lap = 0;
-        LapCounterText.GetComponent<Text>().text = "Lap: " + lap;
+        if (falling)
+        {
+            TryAgainSound.Play();
+            SpaceShip.transform.SetPositionAndRotation(new Vector3(StartPosition.x, StartPosition.y + 0.5f, StartPosition.z), Quaternion.LookRotation(StartRotation));
+            firstLap = true;
+        }
+        else
+        {
+            SpaceShip.transform.SetPositionAndRotation(new Vector3(StartPosition.x, StartPosition.y + 0.5f, StartPosition.z), Quaternion.LookRotation(StartRotation));
+            secondsCount = 0f;
+            firstLap = true;
+            lap = 1;
+            LapCounterText.GetComponent<Text>().text = "Lap: " + lap;
+        }
+        timer = true;
     }
 
     public void AddLap()
@@ -153,7 +178,7 @@ public class GameManager : MonoBehaviour {
         
         secondsCount = 0f;
         lap += 1;
-        if(isMultiplayer && lap == 3)
+        if(isMultiplayer && lap == 4)
         {
             if (isPlayer1Racing)
             {
@@ -173,7 +198,14 @@ public class GameManager : MonoBehaviour {
     }
     public void EnableRace()
     {
-        RaceButton.GetComponent<Button>().interactable = true;
+        SinglePlayerRaceButton.GetComponent<Button>().interactable = true;
+        MultiPlayerRaceButton.GetComponent<Button>().interactable = true;
+    }
+
+    public void Player2Ready()
+    {
+        Time.timeScale = 1f;
+        Player2ReadyButton.SetActive(false);
     }
 
 
