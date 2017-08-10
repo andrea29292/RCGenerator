@@ -147,12 +147,19 @@ public class GameManager : MonoBehaviour {
         Text[] texts = WinnerCanvas.transform.GetComponentsInChildren<Text>();
         //0 is winner text, 1 is winner time, 2 is looser time
         winner = time1 < time2 ? 1 : 2;
-        texts[0].text = "PLAYER "+winner+", YOU WIN!";
-        string p1time = string.Format("{0}:{1:00}", (int)time1 / 60, (int)time1 % 60);
-        string p2time = string.Format("{0}:{1:00}", (int)time2 / 60, (int)time2 % 60);
+        texts[0].text = "PLAYER "+winner+", YOU WIN!";       
 
-        texts[Math.Abs(winner - 1)+1].text = p1time;
-        texts[Math.Abs(winner - 2)+1].text = p2time;
+        texts[Math.Abs(winner - 1)+1].text = FloatToTime(time1);
+        texts[Math.Abs(winner - 2)+1].text = FloatToTime(time2);
+    }
+
+    String FloatToTime(float time) {
+        TimeSpan t = TimeSpan.FromSeconds(time);
+        string str = string.Format("{0:00}:{1:00}:{2:00}",
+                        t.Minutes,
+                        t.Seconds,
+                        t.Milliseconds);
+        return str;
     }
 
     public void SetStartPoint(Vector3 position, Vector3 rotation)
