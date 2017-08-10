@@ -79,7 +79,6 @@ public class PointsGenerator : MonoBehaviour {
             attempt++;
             if (attempt >= 10 & res == false) {
 
-                Debug.Log("Sorry, try again or change params.");
                 break;
             };
             res = GenTrackDone();
@@ -162,7 +161,6 @@ public class PointsGenerator : MonoBehaviour {
         direction = (float)(random.NextDouble() * 360);   //start from a random direction
         Vector3 startPoint = new Vector3(transform.position.x, transform.position.y, transform.position.z);  //but on a center point
         float howFar = farPointDistance + farPointDistance * (1 - maxAngleD / 45);
-        Debug.Log("how far: " + howFar+" far point distance: "+farPointDistance);
         farReturnPoint = Support.MovePoint(startPoint, (float)(direction - 180), howFar);
         //GameObject pointObject = Instantiate(pointPrefab,
           //      farReturnPoint,
@@ -213,7 +211,7 @@ public class PointsGenerator : MonoBehaviour {
             if (!correctSpline(newCurve, false)) return false;
             curvePoints.Add(newCurve);
             k++;
-            if (k >= totalPoints / 2) { Debug.Log("EXIT: cannot reach start"); return false; }
+            if (k >= totalPoints / 2) {  return false; }
         }
 
 
@@ -272,7 +270,6 @@ public class PointsGenerator : MonoBehaviour {
         if (buildSpline(newCurve, prevCurve, lastCurve, curvePoints[0])) return true;
 
         spline.ClearIntersectionPoints();
-        Debug.Log("Questa pista non s'ha da fare");
         GameManager.GetComponent<GameManager>().isTrack = false;
         return false;
 

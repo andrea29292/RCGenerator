@@ -17,8 +17,13 @@ public class GameManager : MonoBehaviour {
     public bool isTrack;
     public GameObject EditorCanvas;
     public GameObject RaceCanvas;
+
     public float startTime;
     public int lap = 1;
+
+    public GameObject WinnerCanvas;
+
+
     bool timer;
     public bool firstLap;
     public GameObject LapCounterText;
@@ -114,10 +119,7 @@ public class GameManager : MonoBehaviour {
         
     }
 
-    public void RaceResults()
-    {
-
-    }
+    
 
     public void EditorMode()
     {
@@ -133,12 +135,25 @@ public class GameManager : MonoBehaviour {
         BestLapText.GetComponent<Text>().text = "";
         EditorCanvas.SetActive(true);
         RaceCanvas.SetActive(false);
+        WinnerCanvas.SetActive(false);
         Destroy(SpaceShip);
         Destroy(StartSign);
         TrackCamera.gameObject.SetActive(true);
     }
 
+    void RaceResults(float time1, float time2) {
+        WinnerCanvas.SetActive(true);
+        int winner;
+        Text[] texts = WinnerCanvas.transform.GetComponentsInChildren<Text>();
+        //0 is winner text, 1 is winner time, 2 is looser time
+        winner = time1 < time2 ? 1 : 2;
+        texts[0].text = "PLAYER "+winner+", YOU WIN!";
+        string p1time = string.Format("{0}:{1:00}", (int)time1 / 60, (int)time1 % 60);
+        string p2time = string.Format("{0}:{1:00}", (int)time2 / 60, (int)time2 % 60);
 
+        texts[Math.Abs(winner - 1)+1].text = p1time;
+        texts[Math.Abs(winner - 2)+1].text = p2time;
+    }
 
     public void SetStartPoint(Vector3 position, Vector3 rotation)
     {
@@ -189,12 +204,11 @@ public class GameManager : MonoBehaviour {
             else
             {
                 Player2BestLap = bestLap;
-                RaceResults();
+                RaceResults(Player1BestLap,Player2BestLap);
             }
             
         }
         LapCounterText.GetComponent<Text>().text = "Lap: "+lap;
-        Debug.Log("LAP: " + lap);
     }
     public void EnableRace()
     {

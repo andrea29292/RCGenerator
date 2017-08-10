@@ -263,7 +263,7 @@ public class BezierSpline : MonoBehaviour {
                 if (intersect) {
                     GameObject cubeObject = Instantiate(colliderPrefab, newPoints[i], Quaternion.identity) as GameObject;
 
-                    Debug.Log("new " + i + " stable " + j);
+                    //Debug.Log("new " + i + " stable " + j);
                     return false;
                 }
             }
@@ -296,7 +296,7 @@ public class BezierSpline : MonoBehaviour {
                 }
                 if(Math3d.IsPointInRectangle(oldPoints[j], r0, r1, r2, r3))
                 {
-                    Debug.Log("Intersezione: " + newPoints[i] + " con: " + oldPoints[j]);
+                    //Debug.Log("Intersezione: " + newPoints[i] + " con: " + oldPoints[j]);
                     foreach(GameObject colObj in colList)
                     {
                         Destroy(col);
@@ -356,9 +356,9 @@ public class BezierSpline : MonoBehaviour {
 
     public void DestroyLastCurve() {
         Array.Resize(ref points, points.Length - 3);
-        Debug.Log("control points before " + intersectionPoints.Count);
+        //Debug.Log("control points before " + intersectionPoints.Count);
         intersectionPoints.RemoveRange(intersectionPoints.Count - controlRes, controlRes);
-        Debug.Log("control points after " + intersectionPoints.Count);
+        //Debug.Log("control points after " + intersectionPoints.Count);
     }
 
 
