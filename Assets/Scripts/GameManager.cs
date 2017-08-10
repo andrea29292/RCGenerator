@@ -70,7 +70,7 @@ public class GameManager : MonoBehaviour {
         EditorMusic.Stop();
         TrackObject.transform.SetPositionAndRotation(Vector3.zero, Quaternion.identity);
         //bestLap = 0;
-        BestLapText.GetComponent<Text>().text = "" + bestLap;
+        BestLapText.GetComponent<Text>().text = "" + FloatToTime(bestLap);
         EditorCanvas.SetActive(false);
         RaceCanvas.SetActive(true);
         TrackCamera.gameObject.SetActive(false);
@@ -93,7 +93,7 @@ public class GameManager : MonoBehaviour {
         bestLap = 0f;
         Player1BestLap = 0f;
         Player2BestLap = 0f;
-        BestLapText.GetComponent<Text>().text = "" + bestLap;
+        BestLapText.GetComponent<Text>().text = "" + FloatToTime(bestLap);
         EditorCanvas.SetActive(false);
         RaceCanvas.SetActive(true);
         TrackCamera.gameObject.SetActive(false);
@@ -110,7 +110,7 @@ public class GameManager : MonoBehaviour {
     public void ChangePlayer()
     {
         Player2ReadyCanvas.SetActive(true);
-        Player2ReadyCanvas.transform.GetComponentInChildren<Text>().text = "TIME TO BEAT: " + Player1BestLap + " sec \n WAITING FOR PLAYER 2";
+        Player2ReadyCanvas.transform.GetComponentInChildren<Text>().text = "TIME TO BEAT: " + FloatToTime(Player1BestLap) + "\n WAITING FOR PLAYER 2";
         Time.timeScale = 0f;
         bestLap = 0f;
         BestLapText.GetComponent<Text>().text = ""+bestLap;
@@ -149,23 +149,34 @@ public class GameManager : MonoBehaviour {
         Time.timeScale = 0f;
         WinnerCanvas.SetActive(true);
         int winner;
+        float winnerTime;
         Text[] texts = WinnerCanvas.transform.GetComponentsInChildren<Text>();
         //0 is winner text, 1 is winner time, 2 is looser time
+
         winner = time1 < time2 ? 1 : 2;
+        winnerTime = time1 < time2 ? time1 : time2;
+
         texts[0].text = "PLAYER "+winner+", YOU WIN!";
-        //string p1time = string.Format("{0}:{1:00}", (int)time1 / 60, (int)time1 % 60);
-        //string p2time = string.Format("{0}:{1:00}", (int)time2 / 60, (int)time2 % 60);
-        string p1time = ""+time1;
-        string p2time = "" + time2;
-        texts[Math.Abs(winner - 1)+1].text = "PLAYER " + winner +" TIME: "+ p1time + " sec";
+
+        
+        texts[Math.Abs(winner - 1)+1].text = "PLAYER " + winner +" TIME: "+ FloatToTime(winnerTime);
         if(winner == 1) {
-            texts[Math.Abs(winner - 2) + 1].text = "PLAYER 2 TIME: " + p2time + " sec";
+            texts[Math.Abs(winner - 2) + 1].text = "PLAYER 2 TIME: " + FloatToTime(time2);
         }
         else
         {
-            texts[Math.Abs(winner - 2) + 1].text = "PLAYER 1 TIME: " + p2time + " sec";
+            texts[Math.Abs(winner - 2) + 1].text = "PLAYER 1 TIME: " + FloatToTime(time1);
         }
-        
+
+    }
+
+    String FloatToTime(float time) {
+        TimeSpan t = TimeSpan.FromSeconds(time);
+        string str = string.Format("{0:00}:{1:00}:{2:00}",
+                        t.Minutes,
+                        t.Seconds,
+                        t.Milliseconds);
+        return str;
     }
 
     public void SetStartPoint(Vector3 position, Vector3 rotation)
@@ -198,7 +209,7 @@ public class GameManager : MonoBehaviour {
         if (secondsCount< bestLap || bestLap == 0)
         {
             bestLap = secondsCount;
-            BestLapText.GetComponent<Text>().text = "" + bestLap;
+            BestLapText.GetComponent<Text>().text = FloatToTime(bestLap);
             BestLapSound.Play();
         }
      
@@ -241,7 +252,7 @@ public class GameManager : MonoBehaviour {
         //set timer UI
         secondsCount += Time.deltaTime;
         secondsCount = Mathf.Round(secondsCount * 100f) / 100f;
-        timerText.text = ""+  secondsCount;
+        timerText.text = FloatToTime(secondsCount) ;
  
     }
 
