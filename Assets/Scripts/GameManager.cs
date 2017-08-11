@@ -93,7 +93,7 @@ public class GameManager : MonoBehaviour {
         bestLap = 0f;
         Player1BestLap = 0f;
         Player2BestLap = 0f;
-        BestLapText.GetComponent<Text>().text = "" + FloatToTime(bestLap);
+        BestLapText.GetComponent<Text>().text = FloatToTime(bestLap);
         EditorCanvas.SetActive(false);
         RaceCanvas.SetActive(true);
         TrackCamera.gameObject.SetActive(false);
@@ -113,7 +113,7 @@ public class GameManager : MonoBehaviour {
         Player2ReadyCanvas.transform.GetComponentInChildren<Text>().text = "TIME TO BEAT: " + FloatToTime(Player1BestLap) + "\n WAITING FOR PLAYER 2";
         Time.timeScale = 0f;
         bestLap = 0f;
-        BestLapText.GetComponent<Text>().text = ""+bestLap;
+        BestLapText.GetComponent<Text>().text = FloatToTime(bestLap);
         SpaceShip.GetComponent<SpaceShipMovement>().SetRedModel();
         isPlayer1Racing = false;
         timer = false;
@@ -176,7 +176,8 @@ public class GameManager : MonoBehaviour {
                         t.Minutes,
                         t.Seconds,
                         t.Milliseconds);
-        return str;
+
+        return str.Substring(0,str.Length-1);
     }
 
     public void SetStartPoint(Vector3 position, Vector3 rotation)
